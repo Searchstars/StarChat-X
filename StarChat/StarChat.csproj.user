@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ActiveDebugProfile>StarChat (Unpackaged)</ActiveDebugProfile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Update="AboutPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <None Update="App.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <Page Update="ChatWindowFrame_FriendChat.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="ChatWindowFrame_NoSelectFriend.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="SettingsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="GroupsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="FriendsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="ChatWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <None Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+</Project>

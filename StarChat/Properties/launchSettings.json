@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "StarChat (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "StarChat (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<Window
+    x:Class="StarChat.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StarChat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" 
+    >
+
+    <Grid x:Name="RootGrid" Background="#1F2023">
+        <Grid x:Name="AppTitleBar" Height="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Image Source="Images/WindowIcon.png"
+                   HorizontalAlignment="Left" 
+                   Width="16" Height="16" 
+                   Margin="8,-310,0,0"/>
+            <TextBlock x:Name="AppTitleTextBlock" Text="StarChat - Connect the world"
+                       TextWrapping="NoWrap"
+                       Style="{StaticResource CaptionTextBlockStyle}" 
+                       VerticalAlignment="Center"
+                       Margin="28,-310,0,0"/>
+        </Grid>
+        <Button Content="登录" Background="Green" VerticalAlignment="Center" Margin="200,210,0,0" Click="Button_Click" x:Name="LoginBtn"></Button>
+        <Button Content="注册" VerticalAlignment="Center" Margin="320,210,0,0" Click="Button_Click_1"></Button>
+        <TextBlock VerticalAlignment="Center" Margin="215,-190,0,0" FontSize="20" Text="登录到 StarChat"></TextBlock>
+        <TextBox VerticalAlignment="Center" Margin="0,-60,0,0" Width="250" PlaceholderText="用户名"  x:Name="usernameinput"></TextBox>
+        <PasswordBox VerticalAlignment="Center" Margin="0,60,0,0" Width="250" PlaceholderText="密码"  x:Name="pwdinput"></PasswordBox>
+    </Grid>
+</Window>

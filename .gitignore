@@ -1,0 +1,5 @@
+/StarChat/bin/*
+/StarChat/obj/*
+/StarChatServer/bin/*
+/StarChatServer/obj/*
+/.vs/*

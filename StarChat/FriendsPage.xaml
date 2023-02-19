@@ -1,0 +1,19 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<Page
+    x:Class="StarChat.FriendsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StarChat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <ListView Width="200" Margin="-900,20,0,0" x:Name="FriendsListView" SelectionMode="Single" IsItemClickEnabled="False" SelectionChanged="FriendsListView_SelectionChanged">
+        </ListView>
+        <Frame Width="865" Height="600" Margin="220,0,0,0" x:Name="ChatFrame"></Frame>
+    </Grid>
+</Page>

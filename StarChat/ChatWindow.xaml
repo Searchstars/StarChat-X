@@ -1,0 +1,62 @@
+﻿<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<Window
+    x:Class="StarChat.ChatWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StarChat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" Background="#1F2023">
+        <Grid x:Name="AppTitleBar" Height="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Image Source="Images/WindowIcon.png"
+                   HorizontalAlignment="Left" 
+                   Width="16" Height="16" 
+                   Margin="8,-660,0,0"/>
+            <TextBlock x:Name="AppTitleTextBlock" Text="StarChat - Connect the world"
+                       TextWrapping="NoWrap"
+                       Style="{StaticResource CaptionTextBlockStyle}" 
+                       VerticalAlignment="Center"
+                       Margin="28,-660,0,0"/>
+        </Grid>
+        <NavigationView x:Name="NavigationViewControl" PaneDisplayMode="LeftCompact" Height="640" Width="1175" IsBackButtonVisible="Collapsed" Margin="-10,33,0,0" SelectionChanged="NavigationViewControl_SelectionChanged" SelectedItem="">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="好友" x:Name="Friends" Tag="fri">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8bd;"></FontIcon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="群组" x:Name="Groups" Tag="gp">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe716;"></FontIcon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="添加好友" x:Name="AddFriends" Tag="af">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe710;"></FontIcon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="创建群组" x:Name="CreateGroups" Tag="cg">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe902;"></FontIcon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="关于StarChat" x:Name="AboutStarChat" Tag="ab">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe946;"></FontIcon>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <ScrollViewer>
+                <Frame x:Name="contentFrame" IsTabStop="True"/>
+            </ScrollViewer>
+        </NavigationView>
+    </Grid>
+</Window>

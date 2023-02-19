@@ -1,0 +1,19 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<Page
+    x:Class="StarChat.ChatWindowFrame_NoSelectFriend"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StarChat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Border CornerRadius="10">
+        <Grid Background="	#06ffffff">
+            <TextBlock Text="呃...空空如也" Margin="395,-60,0,0" VerticalAlignment="Center" FontSize="16"></TextBlock>
+            <TextBlock Text="添加一个好友或加入一个群组开始聊天！当然，如果没朋友也没有可以加入的群组，要不先和机器人说上几句？" Margin="140,10,0,0" VerticalAlignment="Center" FontSize="12"></TextBlock>
+        </Grid>
+    </Border>
+</Page>
