@@ -76,7 +76,7 @@ namespace StarChatServer
             },
             { "Friends", new BsonArray
                 {
-                    new BsonDocument{ { "id", "0" }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"查看官方wiki并加入官方群组，开始你的StarChat之旅！\"}]" } },
+                    new BsonDocument{ { "id", "0" }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"shhhh...看起来，这里有一个新来的？\n别再等啦！查看官方wiki并加入官方群组，开始你的StarChat之旅！\nWelcome to StarChat !\"}]" } },
                     new BsonDocument{ { "id", "1" }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"哈喽哇？不知道怎么使用？给我发个/help吧！当然，你也可以查看：\"},{\"msg_send_time\": \"dont_view\",\"msgtype\":\"hyperlink\",\"msglink\":\"https://chat.stargazing.studio/documents\",\"msgcontent\":\"官方文档\"}]" } }
                 }
             },

@@ -12,6 +12,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <TextBlock>About</TextBlock>
+        <TextBlock Margin="490,220,100,100" FontSize="32">StarChat</TextBlock>
+        <TextBlock Margin="467.5,270,100,100" FontSize="20">Connect the world</TextBlock>
+        <TextBlock Margin="250,315,100,100" FontSize="12">“StarChat”是一款永久完全免费的软件，在使用时请务必遵循其对应的用户协议，并严格遵循你所处的国家/地区/州的法律</TextBlock>
+        <TextBox IsReadOnly="True" Width="300" Height="100" Margin="80,270,100,100" Text="核心开发成员：                             Searchstars#4404" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
     </Grid>
 </Page>

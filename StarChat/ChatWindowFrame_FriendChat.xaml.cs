@@ -11,13 +11,11 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows.Forms;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.ViewManagement;
-using System.Windows.Input;
+using Newtonsoft.Json;
+using static System.Net.Mime.MediaTypeNames;
+using System.Net;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System.Drawing;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -48,7 +46,42 @@ namespace StarChat
                 LogWriter.LogInfo("GetChatHistory 的 Protobuf序列化成功，内容：" + Convert.ToBase64String(memoryStream.ToArray()));
                 LogWriter.LogInfo("尝试将内容发送到服务器...");
                 var result = StarChatReq.GetChatHistory(Convert.ToBase64String(memoryStream.ToArray()));
-                LogWriter.LogInfo("注册结果：" + result);
+                LogWriter.LogInfo("聊天记录返回：" + result);
+
+                List<JsonChatHistory> chathis = JsonConvert.DeserializeObject<List<JsonChatHistory>>(result);
+                foreach(var item in chathis)
+                {
+                    if(item.msgtype == "text")
+                    {
+                        sp_chatcontent.Children.Add(new TextBlock
+                        {
+                            Text=item.msgcontent,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Margin = new Thickness(30,20,0,0)
+                        });
+                    }
+                    if (item.msgtype == "hyperlink")
+                    {
+                        sp_chatcontent.Children.Add(new HyperlinkButton
+                        {
+                            Content = item.msgcontent,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Margin = new Thickness(18, 20, 0, 0),
+                            NavigateUri = new Uri(item.msglink)
+                        });
+                    }
+                    if (item.msgtype == "image")
+                    {
+                        BitmapImage bipm = new BitmapImage();
+                        bipm.UriSource = new Uri(item.msglink);
+                        sp_chatcontent.Children.Add(new Microsoft.UI.Xaml.Controls.Image
+                        {
+                            Source = bipm,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Margin = new Thickness(30, 20, 0, 0),
+                        });
+                    }
+                }
             }
         }
     }

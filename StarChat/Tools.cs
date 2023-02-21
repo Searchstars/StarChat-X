@@ -3,6 +3,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.IO;
 
 namespace StarChat
 {

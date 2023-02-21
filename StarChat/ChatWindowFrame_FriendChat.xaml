@@ -26,25 +26,7 @@
                 </StackPanel>
             </Button>
             <ScrollViewer Height="520" Width="840" Margin="-10,-70,0,0" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <Image Source="Images/WindowIcon.png" Width="16" Height="16" Margin="-750,20,0,0"></Image>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="30,20,0,0">1</TextBlock>
+                <StackPanel x:Name="sp_chatcontent">
                 </StackPanel>
             </ScrollViewer>
         </Grid>
