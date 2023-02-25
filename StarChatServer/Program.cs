@@ -104,7 +104,14 @@ namespace StarChatServer
                 if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/shutdown"))
                 {
                     Console.WriteLine("Shutdown requested");
-                    runServer = false;
+                    byte[] data = Encoding.UTF8.GetBytes("我草，什么Simple Http Server攻击");
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = data.LongLength;
+
+                    // Write out to the response stream (asynchronously), then close it
+                    await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                    resp.Close();
                 }
 
                 // Make sure we don't increment the page views counter if `favicon.ico` is requested
@@ -384,6 +391,18 @@ namespace StarChatServer
                     }
 
                 }
+                else if ((req.Headers["Accept"] == "text/event-stream") && (req.Url.AbsolutePath == "/ListenMsg"))
+                {
+                    resp.ContentType = "text/event-stream";
+
+                    for (int i = 0; true; i++)
+                    {
+                        byte[] buffer = Encoding.UTF8.GetBytes("主播666");
+                        resp.OutputStream.Write(buffer, 0, buffer.Length);
+                        resp.OutputStream.Flush();
+                        await Task.Delay(1000); // 每秒钟发送一次消息
+                    }
+                }
                 else
                 {
                     // Write the response info
@@ -416,7 +435,7 @@ namespace StarChatServer
                 {
                     var doc = new BsonDocument{
                         { "RegTime",new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()},
-                        { "username","StarChatRobotOfficial_ExploreStarChat"},
+                        { "username","StarChatRobotOfficial_"},
                         { "password","cantlogin938293892398298392838929382893289398293829skdskdksjdjkskdjskjdksjdkj"},
                         { "uid",now_can_use_uid},
                         { "chatname",chatname },

@@ -134,7 +134,7 @@ namespace StarChat
                         LogWriter.LogInfo("test用户加入的群组[0]: " + RunningDataSave.groups_list[0].id);
                         LogWriter.LogInfo("test用户的好友[1]：" + RunningDataSave.friends_list[1].chat_history);
                         LogWriter.LogInfo("test用户的聊天用名称：" + RunningDataSave.userchatname);
-                        LogWriter.LogInfo("test服务端给予客户端的token（UDP断开时失效）：" + RunningDataSave.token);
+                        LogWriter.LogInfo("test服务端给予客户端的token：" + RunningDataSave.token);
                         ChatWindow chatwindow = new ChatWindow();
                         chatwindow.Activate();
                         openchatwindow_close_this_win = true;
