@@ -133,81 +133,245 @@ namespace StarChatServer
                 }
                 else if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/ClientUserLoginReq"))
                 {
-                    System.IO.Stream body = req.InputStream;
-                    System.Text.Encoding encoding = req.ContentEncoding;
-                    System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
-                    string data_poststr = reader.ReadToEnd();
-                    using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(data_poststr)))
+                    LoginPostReqAsync(req,resp);
+                }
+                else if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/ClientUserRegisterReq"))
+                {
+                    RegisterPostReqAsync(req,resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetFriendNameFromId")
+                {
+                    GetFriendNameFromIdAsync(req,resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetChatHistory")
+                {
+                    GetChatHistoryAsync(req,resp);
+                }
+                else if ((req.Headers["Accept"] == "text/event-stream") && (req.Url.AbsolutePath == "/ListenMsg"))
+                {
+                    Console.WriteLine("SSE Connected");
+                    SSE_ListenMsgReqAsync(ctx);
+                }
+                else
+                {
+                    // Write the response info
+                    string disableSubmit = !runServer ? "disabled" : "";
+                    byte[] data = Encoding.UTF8.GetBytes("404 Not Found<br/><image style=\"color: black;width: 600;height: 2; background-color: black\"/><br/>Simple C# HTTP Server For StarChat 20230211<br/>" + req.UserAgent + "<br/>" + req.RawUrl);
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+
+                    resp.ContentLength64 = data.LongLength;
+                    // Write out to the response stream (asynchronously), then close it
+                    await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                    resp.Close();
+                }
+            }
+        }
+
+        static async Task GetChatHistoryAsync(HttpListenerRequest req,HttpListenerResponse resp)
+        {
+            using (var body = req.InputStream)
+            using (var reader = new StreamReader(body, req.ContentEncoding))
+            {
+                var data_poststr = reader.ReadToEnd();
+                var data = Convert.FromBase64String(data_poststr);
+
+                try
+                {
+                    var a = Serializer.Deserialize<ProtobufGetChatHistory>(new MemoryStream(data));
+                    Console.WriteLine($"GetChatHistory  TargetId：{a.targetid} Token: {a.token} Target: {a.target}");
+
+                    var Tryfilter = Builders<BsonDocument>.Filter.Eq("tk", a.token);
+                    var Tryprojection = Builders<BsonDocument>.Projection.Include("tk");
+                    var Tryresult = await dbcollection_tokens.Find(Tryfilter).Project(Tryprojection).FirstOrDefaultAsync();
+
+                    if (Tryresult == null)
                     {
-                        var a = ProtoBuf.Serializer.Deserialize<ProtobufLogin>(ms);
-                        Console.WriteLine("ClientUserLoginReq  Username：" + a.username + " Password: " + a.password);
-                        FilterDefinitionBuilder<BsonDocument> builderFilter = Builders<BsonDocument>.Filter;
-                        //约束条件
-                        FilterDefinition<BsonDocument> filter = builderFilter.Eq("username", a.username);
-                        //获取数据
-                        var result = dbcollection_account.Find<BsonDocument>(filter).ToList();
-                        try
+                        throw new Exception("Token not found");
+                    }
+
+                    if (a.target == "friend")
+                    {
+                        var filter = Builders<BsonDocument>.Filter.Eq("uid", int.Parse(a.clientuid));
+                        var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
+                        foreach (var item in result["Friends"].AsBsonArray)
                         {
-                            if (result[0]["password"] == a.password)
+                            if (item["id"].ToString() == a.targetid)
                             {
-                                if (result[0]["ban"] == "no")
-                                {
-                                    var acinfoproto = new ProtobufGetUserAccountInfoRes
-                                    {
-                                        userchatname = result[0]["chatname"].ToString(),
-                                        userimageurl = "该功能暂不开放",
-                                        friend_list = result[0]["Friends"].ToJson(),
-                                        group_list = result[0]["JoinedGroups"].ToJson(),
-                                        token = GetRandomString(30, true, true, true, false, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"),
-                                        uid = result[0]["uid"].ToString()
-                                    };
-                                    var doc = new[]
-                                    {
+                                var chatname = result?["chatname"]?.AsString ?? "";
+                                var dataBytes = Encoding.UTF8.GetBytes($"success>^<{item["chat_history"]}");
+                                resp.ContentType = "text/html";
+                                resp.ContentEncoding = Encoding.UTF8;
+                                resp.ContentLength64 = dataBytes.LongLength;
+
+                                await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(e.ToString());
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+
+                    await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                }
+                finally
+                {
+                    resp.Close();
+                }
+            }
+        }
+
+        static async Task GetFriendNameFromIdAsync(HttpListenerRequest req,HttpListenerResponse resp)
+        {
+            using (var body = req.InputStream)
+            using (var reader = new StreamReader(body, req.ContentEncoding))
+            {
+                var data_poststr = reader.ReadToEnd();
+                var data = Convert.FromBase64String(data_poststr);
+
+                try
+                {
+                    var a = Serializer.Deserialize<ProtobufUidToUserName>(new MemoryStream(data));
+                    Console.WriteLine($"GetFriendNameFromId  TargetId：{a.targetid} Token: {a.token}");
+
+                    var filter = Builders<BsonDocument>.Filter.Eq("uid", a.targetid);
+                    var projection = Builders<BsonDocument>.Projection.Include("chatname");
+                    var result = await dbcollection_account.Find(filter).Project(projection).FirstOrDefaultAsync();
+
+                    var Tryfilter = Builders<BsonDocument>.Filter.Eq("tk", a.token);
+                    var Tryprojection = Builders<BsonDocument>.Projection.Include("tk");
+                    var Tryresult = await dbcollection_tokens.Find(Tryfilter).Project(Tryprojection).FirstOrDefaultAsync();
+
+                    if (Tryresult == null)
+                    {
+                        throw new Exception("Token not found");
+                    }
+
+                    var chatname = result?["chatname"]?.AsString ?? "";
+                    var dataBytes = Encoding.UTF8.GetBytes($"success>^<{chatname}");
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+
+                    await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                }
+                catch (Exception e)
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(e.ToString());
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+
+                    await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                }
+                finally
+                {
+                    resp.Close();
+                }
+            }
+        }
+
+        static async Task RegisterPostReqAsync(HttpListenerRequest req,HttpListenerResponse resp)
+        {
+            System.IO.Stream body = req.InputStream;
+            System.Text.Encoding encoding = req.ContentEncoding;
+            System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
+            string data_poststr = reader.ReadToEnd();
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(data_poststr)))
+            {
+                var a = ProtoBuf.Serializer.Deserialize<ProtobufRegister>(ms);
+                Console.WriteLine("ClientUserRegisterReq  Username：" + a.username + " Password: " + a.password + " RegisterBtnClickNum: " + a.regbutton_click_num);
+                if (a.regbutton_click_num > 2)
+                {
+                    byte[] data = Encoding.UTF8.GetBytes("注册次数过多，请勿刷号");
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = data.LongLength;
+
+                    // Write out to the response stream (asynchronously), then close it
+                    await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                    resp.Close();
+                }
+                else
+                {
+                    try
+                    {
+                        FilterDefinitionBuilder<BsonDocument> builderFilter = Builders<BsonDocument>.Filter;
+                        FilterDefinition<BsonDocument> filter = builderFilter.Eq("username", a.username);
+                        var result = dbcollection_account.Find<BsonDocument>(filter).ToList()[0]["password"];
+                        byte[] data = Encoding.UTF8.GetBytes("该用户已存在");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = data.LongLength;
+
+                        // Write out to the response stream (asynchronously), then close it
+                        await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                        resp.Close();
+                    }
+                    catch
+                    {
+                        AddNewUser(dbcollection_account, a.username, a.password, now_can_use_uid);
+                        now_can_use_uid++;
+                        File.WriteAllText("currentuid.txt", now_can_use_uid.ToString());
+                        byte[] data = Encoding.UTF8.GetBytes("success");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = data.LongLength;
+
+                        // Write out to the response stream (asynchronously), then close it
+                        await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                        resp.Close();
+                    }
+                }
+            }
+        }
+
+        static async Task LoginPostReqAsync(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            System.IO.Stream body = req.InputStream;
+            System.Text.Encoding encoding = req.ContentEncoding;
+            System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
+            string data_poststr = reader.ReadToEnd();
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(data_poststr)))
+            {
+                var a = ProtoBuf.Serializer.Deserialize<ProtobufLogin>(ms);
+                Console.WriteLine("ClientUserLoginReq  Username：" + a.username + " Password: " + a.password);
+                FilterDefinitionBuilder<BsonDocument> builderFilter = Builders<BsonDocument>.Filter;
+                //约束条件
+                FilterDefinition<BsonDocument> filter = builderFilter.Eq("username", a.username);
+                //获取数据
+                var result = dbcollection_account.Find<BsonDocument>(filter).ToList();
+                try
+                {
+                    if (result[0]["password"] == a.password)
+                    {
+                        if (result[0]["ban"] == "no")
+                        {
+                            var acinfoproto = new ProtobufGetUserAccountInfoRes
+                            {
+                                userchatname = result[0]["chatname"].ToString(),
+                                userimageurl = "该功能暂不开放",
+                                friend_list = result[0]["Friends"].ToJson(),
+                                group_list = result[0]["JoinedGroups"].ToJson(),
+                                token = GetRandomString(30, true, true, true, false, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+                                uid = result[0]["uid"].ToString()
+                            };
+                            var doc = new[]
+                            {
                                         new BsonDocument { {"tk",acinfoproto.token} }
                                     };
 
-                                    await dbcollection_tokens.InsertManyAsync(doc);
+                            await dbcollection_tokens.InsertManyAsync(doc);
 
-                                    using (MemoryStream memoryStream = new MemoryStream())
-                                    {
-                                        ProtoBuf.Serializer.Serialize(memoryStream, acinfoproto);
-                                        Console.WriteLine("ProtobufGetUserAccountInfoRes" + Convert.ToBase64String(memoryStream.ToArray()));
-                                        byte[] data = Encoding.UTF8.GetBytes("success>^<" + Convert.ToBase64String(memoryStream.ToArray()));
-                                        resp.ContentType = "text/html";
-                                        resp.ContentEncoding = Encoding.UTF8;
-                                        resp.ContentLength64 = data.LongLength;
-
-                                        // Write out to the response stream (asynchronously), then close it
-                                        await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                                        resp.Close();
-                                    }
-                                }
-                                else if (result[0]["ban"] == "forever")//永久ban
-                                {
-                                    byte[] data = Encoding.UTF8.GetBytes("您的账号已被永久封禁，原因：" + result[0]["banreason"]);
-                                    resp.ContentType = "text/html";
-                                    resp.ContentEncoding = Encoding.UTF8;
-                                    resp.ContentLength64 = data.LongLength;
-
-                                    // Write out to the response stream (asynchronously), then close it
-                                    await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                                    resp.Close();
-                                }
-                                else
-                                {
-                                    byte[] data = Encoding.UTF8.GetBytes("您的账号已被封禁到" + result[0]["ban"] + " (timestamp) ，原因：" + result[0]["banreason"]);
-                                    resp.ContentType = "text/html";
-                                    resp.ContentEncoding = Encoding.UTF8;
-                                    resp.ContentLength64 = data.LongLength;
-
-                                    // Write out to the response stream (asynchronously), then close it
-                                    await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                                    resp.Close();
-                                }
-                            }
-                            else
+                            using (MemoryStream memoryStream = new MemoryStream())
                             {
-                                byte[] data = Encoding.UTF8.GetBytes("用户名或密码错误");
+                                ProtoBuf.Serializer.Serialize(memoryStream, acinfoproto);
+                                Console.WriteLine("ProtobufGetUserAccountInfoRes" + Convert.ToBase64String(memoryStream.ToArray()));
+                                byte[] data = Encoding.UTF8.GetBytes("success>^<" + Convert.ToBase64String(memoryStream.ToArray()));
                                 resp.ContentType = "text/html";
                                 resp.ContentEncoding = Encoding.UTF8;
                                 resp.ContentLength64 = data.LongLength;
@@ -217,32 +381,9 @@ namespace StarChatServer
                                 resp.Close();
                             }
                         }
-                        catch (Exception e)
+                        else if (result[0]["ban"] == "forever")//永久ban
                         {
-                            byte[] data = Encoding.UTF8.GetBytes("用户名或密码错误");
-                            resp.ContentType = "text/html";
-                            resp.ContentEncoding = Encoding.UTF8;
-                            resp.ContentLength64 = data.LongLength;
-
-                            // Write out to the response stream (asynchronously), then close it
-                            await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                            resp.Close();
-                        }
-                    }
-                }
-                else if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/ClientUserRegisterReq"))
-                {
-                    System.IO.Stream body = req.InputStream;
-                    System.Text.Encoding encoding = req.ContentEncoding;
-                    System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
-                    string data_poststr = reader.ReadToEnd();
-                    using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(data_poststr)))
-                    {
-                        var a = ProtoBuf.Serializer.Deserialize<ProtobufRegister>(ms);
-                        Console.WriteLine("ClientUserRegisterReq  Username：" + a.username + " Password: " + a.password + " RegisterBtnClickNum: " + a.regbutton_click_num);
-                        if (a.regbutton_click_num > 2)
-                        {
-                            byte[] data = Encoding.UTF8.GetBytes("注册次数过多，请勿刷号");
+                            byte[] data = Encoding.UTF8.GetBytes("您的账号已被永久封禁，原因：" + result[0]["banreason"]);
                             resp.ContentType = "text/html";
                             resp.ContentEncoding = Encoding.UTF8;
                             resp.ContentLength64 = data.LongLength;
@@ -253,161 +394,31 @@ namespace StarChatServer
                         }
                         else
                         {
-                            try
-                            {
-                                FilterDefinitionBuilder<BsonDocument> builderFilter = Builders<BsonDocument>.Filter;
-                                FilterDefinition<BsonDocument> filter = builderFilter.Eq("username", a.username);
-                                var result = dbcollection_account.Find<BsonDocument>(filter).ToList()[0]["password"];
-                                byte[] data = Encoding.UTF8.GetBytes("该用户已存在");
-                                resp.ContentType = "text/html";
-                                resp.ContentEncoding = Encoding.UTF8;
-                                resp.ContentLength64 = data.LongLength;
-
-                                // Write out to the response stream (asynchronously), then close it
-                                await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                                resp.Close();
-                            }
-                            catch
-                            {
-                                AddNewUser(dbcollection_account, a.username,a.password, now_can_use_uid);
-                                now_can_use_uid++;
-                                File.WriteAllText("currentuid.txt", now_can_use_uid.ToString());
-                                byte[] data = Encoding.UTF8.GetBytes("success");
-                                resp.ContentType = "text/html";
-                                resp.ContentEncoding = Encoding.UTF8;
-                                resp.ContentLength64 = data.LongLength;
-
-                                // Write out to the response stream (asynchronously), then close it
-                                await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                                resp.Close();
-                            }
-                        }
-                    }
-                }
-                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetFriendNameFromId")
-                {
-                    using (var body = req.InputStream)
-                    using (var reader = new StreamReader(body, req.ContentEncoding))
-                    {
-                        var data_poststr = reader.ReadToEnd();
-                        var data = Convert.FromBase64String(data_poststr);
-
-                        try
-                        {
-                            var a = Serializer.Deserialize<ProtobufUidToUserName>(new MemoryStream(data));
-                            Console.WriteLine($"GetFriendNameFromId  TargetId：{a.targetid} Token: {a.token}");
-
-                            var filter = Builders<BsonDocument>.Filter.Eq("uid", a.targetid);
-                            var projection = Builders<BsonDocument>.Projection.Include("chatname");
-                            var result = await dbcollection_account.Find(filter).Project(projection).FirstOrDefaultAsync();
-
-                            var Tryfilter = Builders<BsonDocument>.Filter.Eq("tk", a.token);
-                            var Tryprojection = Builders<BsonDocument>.Projection.Include("tk");
-                            var Tryresult = await dbcollection_tokens.Find(Tryfilter).Project(Tryprojection).FirstOrDefaultAsync();
-
-                            if (Tryresult == null)
-                            {
-                                throw new Exception("Token not found");
-                            }
-
-                            var chatname = result?["chatname"]?.AsString ?? "";
-                            var dataBytes = Encoding.UTF8.GetBytes($"success>^<{chatname}");
+                            byte[] data = Encoding.UTF8.GetBytes("您的账号已被封禁到" + result[0]["ban"] + " (timestamp) ，原因：" + result[0]["banreason"]);
                             resp.ContentType = "text/html";
                             resp.ContentEncoding = Encoding.UTF8;
-                            resp.ContentLength64 = dataBytes.LongLength;
+                            resp.ContentLength64 = data.LongLength;
 
-                            await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
-                        }
-                        catch (Exception e)
-                        {
-                            var dataBytes = Encoding.UTF8.GetBytes(e.ToString());
-                            resp.ContentType = "text/html";
-                            resp.ContentEncoding = Encoding.UTF8;
-                            resp.ContentLength64 = dataBytes.LongLength;
-
-                            await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
-                        }
-                        finally
-                        {
+                            // Write out to the response stream (asynchronously), then close it
+                            await resp.OutputStream.WriteAsync(data, 0, data.Length);
                             resp.Close();
                         }
                     }
-
-                }
-                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetChatHistory")
-                {
-                    using (var body = req.InputStream)
-                    using (var reader = new StreamReader(body, req.ContentEncoding))
+                    else
                     {
-                        var data_poststr = reader.ReadToEnd();
-                        var data = Convert.FromBase64String(data_poststr);
+                        byte[] data = Encoding.UTF8.GetBytes("用户名或密码错误");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = data.LongLength;
 
-                        try
-                        {
-                            var a = Serializer.Deserialize<ProtobufGetChatHistory>(new MemoryStream(data));
-                            Console.WriteLine($"GetChatHistory  TargetId：{a.targetid} Token: {a.token} Target: {a.target}");
-
-                            var Tryfilter = Builders<BsonDocument>.Filter.Eq("tk", a.token);
-                            var Tryprojection = Builders<BsonDocument>.Projection.Include("tk");
-                            var Tryresult = await dbcollection_tokens.Find(Tryfilter).Project(Tryprojection).FirstOrDefaultAsync();
-
-                            if (Tryresult == null)
-                            {
-                                throw new Exception("Token not found");
-                            }
-
-                            if(a.target == "friend")
-                            {
-                                var filter = Builders<BsonDocument>.Filter.Eq("uid", int.Parse(a.clientuid));
-                                var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
-                                foreach(var item in result["Friends"].AsBsonArray)
-                                {
-                                    if (item["id"].ToString() == a.targetid)
-                                    {
-                                        var chatname = result?["chatname"]?.AsString ?? "";
-                                        var dataBytes = Encoding.UTF8.GetBytes($"success>^<{item["chat_history"]}");
-                                        resp.ContentType = "text/html";
-                                        resp.ContentEncoding = Encoding.UTF8;
-                                        resp.ContentLength64 = dataBytes.LongLength;
-
-                                        await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            var dataBytes = Encoding.UTF8.GetBytes(e.ToString());
-                            resp.ContentType = "text/html";
-                            resp.ContentEncoding = Encoding.UTF8;
-                            resp.ContentLength64 = dataBytes.LongLength;
-
-                            await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
-                        }
-                        finally
-                        {
-                            resp.Close();
-                        }
-                    }
-
-                }
-                else if ((req.Headers["Accept"] == "text/event-stream") && (req.Url.AbsolutePath == "/ListenMsg"))
-                {
-                    resp.ContentType = "text/event-stream";
-
-                    for (int i = 0; true; i++)
-                    {
-                        byte[] buffer = Encoding.UTF8.GetBytes("主播666");
-                        resp.OutputStream.Write(buffer, 0, buffer.Length);
-                        resp.OutputStream.Flush();
-                        await Task.Delay(1000); // 每秒钟发送一次消息
+                        // Write out to the response stream (asynchronously), then close it
+                        await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                        resp.Close();
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    // Write the response info
-                    string disableSubmit = !runServer ? "disabled" : "";
-                    byte[] data = Encoding.UTF8.GetBytes("404 Not Found<br/><image style=\"color: black;width: 600;height: 2; background-color: black\"/><br/>Simple C# HTTP Server For StarChat 20230211<br/>" + req.UserAgent + "<br/>" + req.RawUrl);
+                    byte[] data = Encoding.UTF8.GetBytes("用户名或密码错误");
                     resp.ContentType = "text/html";
                     resp.ContentEncoding = Encoding.UTF8;
                     resp.ContentLength64 = data.LongLength;
@@ -419,6 +430,34 @@ namespace StarChatServer
             }
         }
 
+        static async Task SSE_ListenMsgReqAsync(HttpListenerContext context)
+        {
+            context.Response.ContentType = "text/event-stream";
+            context.Response.Headers.Add("Cache-Control", "no-cache");
+            context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+            var writer = new StreamWriter(context.Response.OutputStream);
+
+            while (true)
+            {
+                try
+                {
+                    var message = $"data: {DateTime.Now}\n\n";
+                    await writer.WriteAsync(message);
+                    await writer.FlushAsync();
+
+                    await Task.Delay(1000);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("SSE Disconnected");
+                    break;
+                }
+            }
+
+            writer.Close();
+            context.Response.Close();
+        }
 
         public static void Main(string[] args)
         {
