@@ -12,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="AboutPage.xaml" />
+    <None Remove="AddFriendsOrGroupsPage.xaml" />
     <None Remove="ChatWindow.xaml" />
     <None Remove="ChatWindowFrame_FriendChat.xaml" />
     <None Remove="ChatWindowFrame_NoSelectFriend.xaml" />
@@ -49,6 +50,12 @@
     <Resource Include="Segoe Fluent Icons.ttf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="AddFriendsOrGroupsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

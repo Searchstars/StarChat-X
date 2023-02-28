@@ -38,7 +38,7 @@
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe716;"></FontIcon>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="添加好友" x:Name="AddFriends" Tag="af">
+                <NavigationViewItem Content="添加好友或群组" x:Name="AddFriendsOrGroups" Tag="afog">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe710;"></FontIcon>
                     </NavigationViewItem.Icon>

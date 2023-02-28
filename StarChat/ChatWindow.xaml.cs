@@ -77,6 +77,7 @@ namespace StarChat
             LogWriter.LogInfo("NavigationView SelectionChanged£¬Ñ¡ÔñµÄitem tagÎª" + (string)selectedItem.Tag);
             if ((string)selectedItem.Tag == "fri") contentFrame.Navigate(typeof(FriendsPage));
             else if ((string)selectedItem.Tag == "gp") contentFrame.Navigate(typeof(GroupsPage));
+            else if ((string)selectedItem.Tag == "afog") contentFrame.Navigate(typeof(AddFriendsOrGroupsPage));
             else if ((string)selectedItem.Tag == "ab") contentFrame.Navigate(typeof(AboutPage));
             else if ((string)selectedItem.Tag == "Settings") contentFrame.Navigate(typeof(SettingsPage));
         }

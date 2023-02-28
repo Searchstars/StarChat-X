@@ -5,9 +5,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <ActiveDebugProfile>StarChat (Unpackaged)</ActiveDebugProfile>
+    <_LastSelectedProfileId>C:\Users\searc\Documents\Github\StarChat\StarChat\Properties\PublishProfiles\win10-x86.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
     <Page Update="AboutPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="AddFriendsOrGroupsPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <None Update="App.xaml">
