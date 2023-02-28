@@ -34,6 +34,42 @@ namespace StarChat
         private void Button_Click(object sender, RoutedEventArgs e)//Search User
         {
 
+            if (SearchUser_TextBox_Uid.Text == "0" || SearchUser_TextBox_Uid.Text == "1")
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "无法搜索该UID",
+                    Content = "不能添加官方机器人为好友",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                cd.ShowAsync();
+            }
+
+            else
+            {
+
+                var uidtonameproto = new ProtobufUidToUserName
+                {
+                    targetid = int.Parse(SearchUser_TextBox_Uid.Text),
+                    token = RunningDataSave.token
+                };
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    ProtoBuf.Serializer.Serialize(memoryStream, uidtonameproto);
+                    if (StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray())).Contains("ERR"))
+                    {
+                        SearchStatUser.Text = "该用户不存在，请核对uid是否正确";
+                    }
+                    else
+                    {
+                        SearchStatUser.Text = "用户名：" + StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
+                        SearchUser_SendReq_Button.IsEnabled = true;
+                    }
+                }
+
+            }
         }
     }
 }

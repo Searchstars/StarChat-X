@@ -16,9 +16,9 @@
             <PivotItem Header="搜索用户">
                 <!--Pivot content goes here-->
                 <Grid>
-                    <TextBox Width="300" Height="10" PlaceholderText="输入好友UID" Margin="-190,-350,0,0"></TextBox>
+                    <TextBox Width="300" Height="10" PlaceholderText="输入好友UID" Margin="-190,-350,0,0" x:Name="SearchUser_TextBox_Uid"></TextBox>
                     <Button Margin="660,-344,0,0" Content="搜索" Height="35" Click="Button_Click"></Button>
-                    <TextBlock x:Name="SearchStat" Margin="-20,-30,0,0" VerticalAlignment="Center" TextAlignment="Center" FontSize="16">请先搜索...</TextBlock>
+                    <TextBlock x:Name="SearchStatUser" Margin="-20,-30,0,0" VerticalAlignment="Center" TextAlignment="Center" FontSize="16">请先搜索...</TextBlock>
                     <Button x:Name="SearchUser_SendReq_Button" Content="发送好友请求" IsEnabled="False" VerticalAlignment="Center" Margin="430,250,0,0" Width="200"></Button>
                 </Grid>
             </PivotItem>

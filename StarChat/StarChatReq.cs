@@ -108,14 +108,6 @@ namespace StarChat
                 }
                 else
                 {
-                    var cd = new ContentDialog
-                    {
-                        Title = "Error",
-                        Content = "账号信息异常或某个好友的账号被注销",
-                        CloseButtonText = "OK",
-                        DefaultButton = ContentDialogButton.Close
-                    };
-                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
                     return "ERR";
                 }
             }

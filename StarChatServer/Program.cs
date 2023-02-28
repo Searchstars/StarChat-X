@@ -252,12 +252,24 @@ namespace StarChatServer
                     }
 
                     var chatname = result?["chatname"]?.AsString ?? "";
-                    var dataBytes = Encoding.UTF8.GetBytes($"success>^<{chatname}");
-                    resp.ContentType = "text/html";
-                    resp.ContentEncoding = Encoding.UTF8;
-                    resp.ContentLength64 = dataBytes.LongLength;
+                    if (chatname == null || chatname == "")
+                    {
+                        var dataBytesnull = Encoding.UTF8.GetBytes("eheheh_user_not_found");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = dataBytesnull.LongLength;
 
-                    await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                        await resp.OutputStream.WriteAsync(dataBytesnull, 0, dataBytesnull.Length);
+                    }
+                    else
+                    {
+                        var dataBytes = Encoding.UTF8.GetBytes($"success>^<{chatname}");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = dataBytes.LongLength;
+
+                        await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                    }
                 }
                 catch (Exception e)
                 {

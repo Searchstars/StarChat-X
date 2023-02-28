@@ -11,6 +11,7 @@ using System.IO;
 using Microsoft.Win32;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Microsoft.Toolkit.Uwp.Notifications;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -73,7 +74,22 @@ namespace StarChat
 #if DEBUG
             AppTitleTextBlock.Text = "StarChat - Connect the world"+ "   [Development Build]";
 #endif
-            
+
+            try
+            {
+                // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
+                new ToastContentBuilder()
+                    .AddText("StarChat")
+                    .AddText("欢迎来到StarChat！\n版本号：" + App.appver + "\nRelease Type：" + App.appreleasetype + "\nServer Address：" + App.chatserverip + "\nClient IP：" + RunningDataSave.user_ip_addr + "\n开发构建，封闭内测，包体与服务器地址请不要泄露！")
+                    .Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
+            }
+            catch(Exception ex)
+            {
+                new ToastContentBuilder()
+                    .AddText("StarChat Error Report")
+                    .AddText("出现报错，请截图上报给开发者：\n" + ex.ToString())
+                    .Show();
+            }
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)//Login Click
