@@ -67,8 +67,19 @@ namespace StarChat
             AppTitleTextBlock.Text = "StarChat - Connect the world" + "   [Development Build]";
 #endif
             IntPtr hImc = Win32Api.ImmGetContext(hwnd);
-            Win32Api.ShowReadingWindow(hImc,true);
+            Win32Api.ShowReadingWindow(hImc, true);
             RunningDataSave.chatwindow_static = this;
+
+            var sseproto = new ProtobufSSEConnectReq
+            {
+                uid = RunningDataSave.useruid,
+                token = RunningDataSave.token,
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, sseproto);
+                StarChatReq.ConnectSSE(Convert.ToBase64String(memoryStream.ToArray()));
+            }
         }
 
         private void NavigationViewControl_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

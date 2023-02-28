@@ -28,6 +28,8 @@ namespace StarChatServer
         public static string pageData = "Welcome to StarChat Server";
         public static int now_can_use_uid = 114514;
 
+        public static Dictionary<int,HttpListenerContext> sse_dict = new Dictionary<int,HttpListenerContext>();
+
         public static string GetRandomString(int length, bool useNum, bool useLow, bool useUpp, bool useSpe, string custom)//随机字符串函数，一般token生成用
         {
             byte[] b = new byte[4];
@@ -248,7 +250,12 @@ namespace StarChatServer
 
                     if (Tryresult == null)
                     {
-                        throw new Exception("Token not found");
+                        var dataBytesnull = Encoding.UTF8.GetBytes("eheheh_token_err");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = dataBytesnull.LongLength;
+
+                        await resp.OutputStream.WriteAsync(dataBytesnull, 0, dataBytesnull.Length);
                     }
 
                     var chatname = result?["chatname"]?.AsString ?? "";
@@ -444,31 +451,60 @@ namespace StarChatServer
 
         static async Task SSE_ListenMsgReqAsync(HttpListenerContext context)
         {
-            context.Response.ContentType = "text/event-stream";
-            context.Response.Headers.Add("Cache-Control", "no-cache");
-            context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
-            var writer = new StreamWriter(context.Response.OutputStream);
-
-            while (true)
+            System.IO.Stream body = context.Request.InputStream;
+            System.Text.Encoding encoding = context.Request.ContentEncoding;
+            System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
+            string data_poststr = reader.ReadToEnd();
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(data_poststr)))
             {
-                try
+                var a = ProtoBuf.Serializer.Deserialize<ProtobufSSEConnectReq>(ms);
+
+                var Tryfilter = Builders<BsonDocument>.Filter.Eq("tk", a.token);
+                var Tryprojection = Builders<BsonDocument>.Projection.Include("tk");
+                var Tryresult = await dbcollection_tokens.Find(Tryfilter).Project(Tryprojection).FirstOrDefaultAsync();
+
+                if (Tryresult == null || Tryresult == "")
                 {
-                    var message = $"data: {DateTime.Now}\n\n";
+                    Console.WriteLine("SSE_TOKEN_ERR");
+                    var dataBytesnull = Encoding.UTF8.GetBytes("eheheh_token_err");
+                    context.Response.ContentType = "text/html";
+                    context.Response.ContentEncoding = Encoding.UTF8;
+                    context.Response.ContentLength64 = dataBytesnull.LongLength;
+
+                    await context.Response.OutputStream.WriteAsync(dataBytesnull, 0, dataBytesnull.Length);
+                }
+                else
+                {
+                    Console.WriteLine("SSE_START_SEND");
+                    context.Response.ContentType = "text/event-stream";
+                    context.Response.Headers.Add("Cache-Control", "no-cache");
+                    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+                    var writer = new StreamWriter(context.Response.OutputStream);
+
+                    var message = $"data: {"sse_status>connected"}\n\n";
                     await writer.WriteAsync(message);
                     await writer.FlushAsync();
 
-                    await Task.Delay(1000);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("SSE Disconnected");
-                    break;
+                    sse_dict.Add(a.uid,context);
                 }
             }
+        }
 
-            writer.Close();
-            context.Response.Close();
+        static async Task WhileCheckDictContext()
+        {
+            Console.WriteLine("SSE Dict Check Start!");
+            while (true)
+            {
+                foreach (int key in sse_dict.Keys)
+
+                {
+
+                    Console.WriteLine(key.ToString() + sse_dict[key]);
+
+                }
+            }
         }
 
         public static void Main(string[] args)
@@ -523,6 +559,8 @@ namespace StarChatServer
             Console.WriteLine("Server Start!");
             Console.WriteLine("StarChatServer is supported by ChatGPT, a language model developed by OpenAI.");
             Console.WriteLine("Listening for connections on {0}", url);
+
+            Task.Run(WhileCheckDictContext);
 
             // Handle requests
             Task listenTask = HandleIncomingConnections();

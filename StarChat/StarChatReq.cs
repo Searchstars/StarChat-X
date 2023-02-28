@@ -6,16 +6,21 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using Microsoft.UI.Xaml.Controls;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace StarChat
 {
     public static class StarChatReq
     {
+
+        public static string http_or_https = "http://";
+
         public static string ClientUserLoginReq(string protob64)
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://" + App.chatserverip + "/ClientUserLoginReq");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ClientUserLoginReq");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -56,7 +61,7 @@ namespace StarChat
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://" + App.chatserverip + "/ClientUserRegisterReq");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ClientUserRegisterReq");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -88,7 +93,7 @@ namespace StarChat
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://" + App.chatserverip + "/GetFriendNameFromId");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetFriendNameFromId");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -129,7 +134,7 @@ namespace StarChat
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://" + App.chatserverip + "/GetChatHistory");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetChatHistory");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -171,6 +176,39 @@ namespace StarChat
                 };
                 cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
                 return "ERR";
+            }
+        }
+
+        public static void ConnectSSE(string protob64)
+        {
+            HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ListenMsg");
+            //字符串转换为字节码
+            byte[] bs = Encoding.UTF8.GetBytes(protob64);
+            httpWebRequest.ContentType = "application/text";
+            httpWebRequest.ContentLength = bs.Length;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Timeout = 20000;
+            httpWebRequest.Accept = "text/event-stream";
+            httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
+            HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+            SSEMsgRecv(streamReader);
+        }
+
+        static async Task SSEMsgRecv(StreamReader streamReader)
+        {
+            while (true)
+            {
+                var line = await streamReader.ReadLineAsync();
+                if (string.IsNullOrEmpty(line)) // 一个消息结束
+                {
+                    Console.WriteLine(); // 消息结束后输出空行，便于调试
+                }
+                else if (line.StartsWith("data: "))
+                {
+                    var data = line.Substring("data: ".Length);
+                    Console.WriteLine(data);
+                }
             }
         }
     }

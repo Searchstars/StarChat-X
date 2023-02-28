@@ -139,6 +139,24 @@ namespace StarChat
         /// </summary>
         public string token { get; set; }
     }
+    class ProtobufSendAddFriendRequestReq
+    {
+        [ProtoMember(1)]
+        /// <summary>
+        /// 对方uid
+        /// </summary>
+        public int targetuid { get; set; }
+        [ProtoMember(2)]
+        /// <summary>
+        /// 本人uid
+        /// </summary>
+        public int uid { get; set; }
+        [ProtoMember(3)]
+        /// <summary>
+        /// token验证
+        /// </summary>
+        public string token { get; set; }
+    }
     [ProtoContract]
     class ProtobufLogUpload
     {
