@@ -151,7 +151,6 @@ namespace StarChatServer
                 }
                 else if ((req.Headers["Accept"] == "text/event-stream") && (req.Url.AbsolutePath == "/ListenMsg"))
                 {
-                    Console.WriteLine("SSE Connected");
                     SSE_ListenMsgReqAsync(ctx);
                 }
                 else
@@ -466,7 +465,6 @@ namespace StarChatServer
 
                 if (Tryresult == null || Tryresult == "")
                 {
-                    Console.WriteLine("SSE_TOKEN_ERR");
                     var dataBytesnull = Encoding.UTF8.GetBytes("eheheh_token_err");
                     context.Response.ContentType = "text/html";
                     context.Response.ContentEncoding = Encoding.UTF8;
@@ -476,7 +474,8 @@ namespace StarChatServer
                 }
                 else
                 {
-                    Console.WriteLine("SSE_START_SEND");
+                    Console.WriteLine("SSE Connected UID: " + a.uid);
+
                     context.Response.ContentType = "text/event-stream";
                     context.Response.Headers.Add("Cache-Control", "no-cache");
                     context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
@@ -497,13 +496,26 @@ namespace StarChatServer
             Console.WriteLine("SSE Dict Check Start!");
             while (true)
             {
+                Console.WriteLine("while");
                 foreach (int key in sse_dict.Keys)
-
                 {
 
-                    Console.WriteLine(key.ToString() + sse_dict[key]);
+                    try
+                    {
+                        var writer = new StreamWriter(sse_dict[key].Response.OutputStream);
+
+                        var message = $"data: {"sse_event>checklive"}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }
+                    catch
+                    {
+                        Console.WriteLine("SSE Disconnected UID: " + key);
+                        sse_dict.Remove(key);
+                    }
 
                 }
+                await Task.Delay(3000);//服务器tick 0.3
             }
         }
 
