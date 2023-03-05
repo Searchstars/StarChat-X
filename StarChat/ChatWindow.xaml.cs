@@ -80,6 +80,7 @@ namespace StarChat
                 ProtoBuf.Serializer.Serialize(memoryStream, sseproto);
                 StarChatReq.ConnectSSE(Convert.ToBase64String(memoryStream.ToArray()));
             }
+            RunningDataSave.chatwindow_nav_static = this.NavigationViewControl;
         }
 
         private void NavigationViewControl_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

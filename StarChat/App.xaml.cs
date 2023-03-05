@@ -44,6 +44,7 @@ namespace StarChat
                 };
                 cd.XamlRoot = RunningDataSave.mainwindow_static.Content.XamlRoot;
                 await cd.ShowAsync();
+                RunningDataSave.user_ip_addr = "network_error";
 #if DEBUG
                 LogWriter.LogInfo("Debug免死");
 #else

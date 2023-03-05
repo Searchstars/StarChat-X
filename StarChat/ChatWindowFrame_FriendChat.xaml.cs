@@ -16,6 +16,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Net;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Drawing;
+using Microsoft.Win32;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -82,6 +83,11 @@ namespace StarChat
                         });
                     }
                 }
+            }
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").GetValue("AppsUseLightTheme").ToString() == "1")
+            {
+                LogWriter.LogInfo("好吧，看来目前系统使用的是浅色模式...切换背景颜色咯！");
+                SendBtn.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 192, 192));
             }
         }
     }

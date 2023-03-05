@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation and Contributors.
+ï»¿// Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
 using Microsoft.UI;
@@ -33,14 +33,14 @@ namespace StarChat
         {
             if (!openchatwindow_close_this_win)
             {
-                LogWriter.LogInfo("ÓÃ»§¹Ø±ÕµÇÂ½´°¿Ú£¬³ÌĞòÍË³ö");
+                LogWriter.LogInfo("ç”¨æˆ·å…³é—­ç™»é™†çª—å£ï¼Œç¨‹åºé€€å‡º");
                 App.application_exit_event();
             }
         }
 
         private void window_sizechange(object a, WindowSizeChangedEventArgs e)
         {
-            LogWriter.LogInfo("ÓÃ»§ÕıÔÚ³¢ÊÔ×ÔĞĞµ÷Õû´°¿Ú´óĞ¡£¬ÕıÔÚÇ¿ÖÆµ÷»Ø...");
+            LogWriter.LogInfo("ç”¨æˆ·æ­£åœ¨å°è¯•è‡ªè¡Œè°ƒæ•´çª—å£å¤§å°ï¼Œæ­£åœ¨å¼ºåˆ¶è°ƒå›...");
             var rect = appWindow.Size;
             rect.Width = 600;
             rect.Height = 350;
@@ -62,13 +62,13 @@ namespace StarChat
             rect.Height = 350;
             appWindow.Resize(rect);
             this.SizeChanged += window_sizechange;
-            LogWriter.LogInfo("´°¿ÚWidthÓëHeightÉèÖÃÍê³É£¬ResizeÍê±Ï");
+            LogWriter.LogInfo("çª—å£Widthä¸Heightè®¾ç½®å®Œæˆï¼ŒResizeå®Œæ¯•");
             SetTitleBar(AppTitleBar);
             if(Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").GetValue("AppsUseLightTheme").ToString() == "1")
             {
-                LogWriter.LogInfo("ºÃ°É£¬¿´À´Ä¿Ç°ÏµÍ³Ê¹ÓÃµÄÊÇÇ³É«Ä£Ê½...ÇĞ»»±³¾°ÑÕÉ«¿©£¡");
+                LogWriter.LogInfo("å¥½å§ï¼Œçœ‹æ¥ç›®å‰ç³»ç»Ÿä½¿ç”¨çš„æ˜¯æµ…è‰²æ¨¡å¼...åˆ‡æ¢èƒŒæ™¯é¢œè‰²å’¯ï¼");
                 RootGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255,243,243,243));
-                LoginBtn.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0,0,103,192));
+                LoginBtn.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255,0,192,192));
             }
             AppTitleTextBlock.Text = "StarChat - Connect the world";
 #if DEBUG
@@ -80,14 +80,14 @@ namespace StarChat
                 // Requires Microsoft.Toolkit.Uwp.Notifications NuGet package version 7.0 or greater
                 new ToastContentBuilder()
                     .AddText("StarChat")
-                    .AddText("»¶Ó­À´µ½StarChat£¡\n°æ±¾ºÅ£º" + App.appver + "\nRelease Type£º" + App.appreleasetype + "\nServer Address£º" + App.chatserverip + "\nClient IP£º" + RunningDataSave.user_ip_addr + "\n¿ª·¢¹¹½¨£¬·â±ÕÄÚ²â£¬°üÌåÓë·şÎñÆ÷µØÖ·Çë²»ÒªĞ¹Â¶£¡")
+                    .AddText("æ¬¢è¿æ¥åˆ°StarChatï¼\nç‰ˆæœ¬å·ï¼š" + App.appver + "\nRelease Typeï¼š" + App.appreleasetype + "\nServer Addressï¼š" + App.chatserverip + "\nClient IPï¼š" + RunningDataSave.user_ip_addr + "\nå¼€å‘æ„å»ºï¼Œå°é—­å†…æµ‹ï¼ŒåŒ…ä½“ä¸æœåŠ¡å™¨åœ°å€è¯·ä¸è¦æ³„éœ²ï¼")
                     .Show(); // Not seeing the Show() method? Make sure you have version 7.0, and if you're using .NET 6 (or later), then your TFM must be net6.0-windows10.0.17763.0 or greater
             }
             catch(Exception ex)
             {
                 new ToastContentBuilder()
                     .AddText("StarChat Error Report")
-                    .AddText("³öÏÖ±¨´í£¬Çë½ØÍ¼ÉÏ±¨¸ø¿ª·¢Õß£º\n" + ex.ToString())
+                    .AddText("å‡ºç°æŠ¥é”™ï¼Œè¯·æˆªå›¾ä¸ŠæŠ¥ç»™å¼€å‘è€…ï¼š\n" + ex.ToString())
                     .Show();
             }
         }
@@ -96,16 +96,33 @@ namespace StarChat
         {
             if(usernameinput.Text == "" || pwdinput.Password == "")
             {
-                LogWriter.LogInfo("ÓÃ»§Ã»ÊäÓÃ»§Ãû»òÕßÃÜÂë£¬ÂïÁË");
+                LogWriter.LogInfo("ç”¨æˆ·æ²¡è¾“ç”¨æˆ·åæˆ–è€…å¯†ç ï¼Œå˜›äº†");
                 var cd = new ContentDialog
                 {
-                    Title = "µÇÂ¼Ê§°Ü",
-                    Content = "ÄãËÆºõ²¢Ã»ÓĞÊäÈëÓÃ»§Ãû»òÃÜÂë...»¹ÊÇ¶¼Ã»Êä£¿",
+                    Title = "ç™»å½•å¤±è´¥",
+                    Content = "ä½ ä¼¼ä¹å¹¶æ²¡æœ‰è¾“å…¥ç”¨æˆ·åæˆ–å¯†ç ...è¿˜æ˜¯éƒ½æ²¡è¾“ï¼Ÿ",
                     CloseButtonText = "OK",
                     DefaultButton = ContentDialogButton.Close
                 };
                 cd.XamlRoot = this.Content.XamlRoot;
                 var result = await cd.ShowAsync();
+            }
+            else if(RunningDataSave.user_ip_addr == "noinit")
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "å¹´è½»äºº666",
+                    Content = "æˆ‘è‰è¿™æ‰‹é€Ÿï¼Œå“æˆ‘ä¸€è·³é‡Šæ”¾å¿æœ¯ğŸ¥·",
+                    PrimaryButtonText = "ç‚¹å‡»é‡Šæ”¾",
+                    CloseButtonText = "æˆ‘æ˜¯å‚»é€¼",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = this.Content.XamlRoot;
+                var result = await cd.ShowAsync();
+                if(result == ContentDialogResult.Primary)
+                {
+                    System.Diagnostics.Process.Start("start \"https://www.bilibili.com/video/BV1Z84y147JF/?share_source=é¼ ç¿ä¸“å±åˆ†äº«é“¾æ¥&t=184\"");
+                }
             }
             else
             {
@@ -117,16 +134,16 @@ namespace StarChat
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     ProtoBuf.Serializer.Serialize(memoryStream, loginproto);
-                    LogWriter.LogInfo("ClientUserLoginReq µÄ ProtobufĞòÁĞ»¯³É¹¦£¬ÄÚÈİ£º" + Convert.ToBase64String(memoryStream.ToArray()));
-                    LogWriter.LogInfo("³¢ÊÔ½«ÄÚÈİ·¢ËÍµ½·şÎñÆ÷...");
+                    LogWriter.LogInfo("ClientUserLoginReq çš„ Protobufåºåˆ—åŒ–æˆåŠŸï¼Œå†…å®¹ï¼š" + Convert.ToBase64String(memoryStream.ToArray()));
+                    LogWriter.LogInfo("å°è¯•å°†å†…å®¹å‘é€åˆ°æœåŠ¡å™¨...");
                     var result = StarChatReq.ClientUserLoginReq(Convert.ToBase64String(memoryStream.ToArray()));
-                    LogWriter.LogInfo("µÇÂ¼½á¹û£º" + result);
+                    LogWriter.LogInfo("ç™»å½•ç»“æœï¼š" + result);
                     if (result.Contains("E-R-R-O-R-M-S-G="))
                     {
                         var cd = new ContentDialog
                         {
-                            Title = "µÇÂ¼Ê§°Ü",
-                            Content = "ÍøÂçÁ¬½ÓÊ§°Ü»ò·şÎñÆ÷ÒÑ¹Ø±Õ£¬´íÎóĞÅÏ¢£º\n" + result.Split("E-R-R-O-R-M-S-G=")[1],
+                            Title = "ç™»å½•å¤±è´¥",
+                            Content = "ç½‘ç»œè¿æ¥å¤±è´¥æˆ–æœåŠ¡å™¨å·²å…³é—­ï¼Œé”™è¯¯ä¿¡æ¯ï¼š\n" + result.Split("E-R-R-O-R-M-S-G=")[1],
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close
                         };
@@ -137,7 +154,7 @@ namespace StarChat
                     {
                         var cd = new ContentDialog
                         {
-                            Title = "µÇÂ¼Ê§°Ü",
+                            Title = "ç™»å½•å¤±è´¥",
                             Content = "" + result.Split("NO-OK-RETURN-MSG=")[1],
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close
@@ -147,10 +164,10 @@ namespace StarChat
                     }
                     else
                     {
-                        LogWriter.LogInfo("testÓÃ»§¼ÓÈëµÄÈº×é[0]: " + RunningDataSave.groups_list[0].id);
-                        LogWriter.LogInfo("testÓÃ»§µÄºÃÓÑ[1]£º" + RunningDataSave.friends_list[1].chat_history);
-                        LogWriter.LogInfo("testÓÃ»§µÄÁÄÌìÓÃÃû³Æ£º" + RunningDataSave.userchatname);
-                        LogWriter.LogInfo("test·şÎñ¶Ë¸øÓè¿Í»§¶ËµÄtoken£º" + RunningDataSave.token);
+                        LogWriter.LogInfo("testç”¨æˆ·åŠ å…¥çš„ç¾¤ç»„[0]: " + RunningDataSave.groups_list[0].id);
+                        LogWriter.LogInfo("testç”¨æˆ·çš„å¥½å‹[1]ï¼š" + RunningDataSave.friends_list[1].chat_history);
+                        LogWriter.LogInfo("testç”¨æˆ·çš„èŠå¤©ç”¨åç§°ï¼š" + RunningDataSave.userchatname);
+                        LogWriter.LogInfo("testæœåŠ¡ç«¯ç»™äºˆå®¢æˆ·ç«¯çš„tokenï¼š" + RunningDataSave.token);
                         ChatWindow chatwindow = new ChatWindow();
                         chatwindow.Activate();
                         openchatwindow_close_this_win = true;
@@ -165,11 +182,11 @@ namespace StarChat
             register_btn_click_num++;
             if (usernameinput.Text == "" || pwdinput.Password  == "")
             {
-                LogWriter.LogInfo("ÓÃ»§Ã»ÊäÓÃ»§Ãû»òÕßÃÜÂë£¬ÂïÁË");
+                LogWriter.LogInfo("ç”¨æˆ·æ²¡è¾“ç”¨æˆ·åæˆ–è€…å¯†ç ï¼Œå˜›äº†");
                 var cd = new ContentDialog
                 {
-                    Title = "×¢²áÊ§°Ü",
-                    Content = "ÄãËÆºõ²¢Ã»ÓĞÊäÈëÓÃ»§Ãû»òÃÜÂë...»¹ÊÇ¶¼Ã»Êä£¿",
+                    Title = "æ³¨å†Œå¤±è´¥",
+                    Content = "ä½ ä¼¼ä¹å¹¶æ²¡æœ‰è¾“å…¥ç”¨æˆ·åæˆ–å¯†ç ...è¿˜æ˜¯éƒ½æ²¡è¾“ï¼Ÿ",
                     CloseButtonText = "OK",
                     DefaultButton = ContentDialogButton.Close
                 };
@@ -187,16 +204,16 @@ namespace StarChat
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     ProtoBuf.Serializer.Serialize(memoryStream, regproto);
-                    LogWriter.LogInfo("ClientUserRegisterReq µÄ ProtobufĞòÁĞ»¯³É¹¦£¬ÄÚÈİ£º" + Convert.ToBase64String(memoryStream.ToArray()));
-                    LogWriter.LogInfo("³¢ÊÔ½«ÄÚÈİ·¢ËÍµ½·şÎñÆ÷...");
+                    LogWriter.LogInfo("ClientUserRegisterReq çš„ Protobufåºåˆ—åŒ–æˆåŠŸï¼Œå†…å®¹ï¼š" + Convert.ToBase64String(memoryStream.ToArray()));
+                    LogWriter.LogInfo("å°è¯•å°†å†…å®¹å‘é€åˆ°æœåŠ¡å™¨...");
                     var result = StarChatReq.ClientUserRegisterReq(Convert.ToBase64String(memoryStream.ToArray()));
-                    LogWriter.LogInfo("×¢²á½á¹û£º" + result);
+                    LogWriter.LogInfo("æ³¨å†Œç»“æœï¼š" + result);
                     if (result.Contains("E-R-R-O-R-M-S-G="))
                     {
                         var cd = new ContentDialog
                         {
-                            Title = "×¢²áÊ§°Ü",
-                            Content = "ÍøÂçÁ¬½ÓÊ§°Ü»ò·şÎñÆ÷ÒÑ¹Ø±Õ£¬´íÎóĞÅÏ¢£º\n" + result.Split("E-R-R-O-R-M-S-G=")[1],
+                            Title = "æ³¨å†Œå¤±è´¥",
+                            Content = "ç½‘ç»œè¿æ¥å¤±è´¥æˆ–æœåŠ¡å™¨å·²å…³é—­ï¼Œé”™è¯¯ä¿¡æ¯ï¼š\n" + result.Split("E-R-R-O-R-M-S-G=")[1],
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close
                         };
@@ -207,7 +224,7 @@ namespace StarChat
                     {
                         var cd = new ContentDialog
                         {
-                            Title = "×¢²áÊ§°Ü",
+                            Title = "æ³¨å†Œå¤±è´¥",
                             Content = "" + result.Split("NO-OK-RETURN-MSG=")[1],
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close

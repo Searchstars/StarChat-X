@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.UI.Xaml.Controls;
+using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,5 +29,7 @@ namespace StarChat
         public static string chatframe_type = null;//friend 或 group
 
         public static int chatframe_targetid = 0;
+
+        public static NavigationView chatwindow_nav_static = null;
     }
 }

@@ -14,7 +14,7 @@
     <Border CornerRadius="10">
         <Grid Background="	#06ffffff">
             <TextBox VerticalAlignment="Center" Width="600" Margin="-210,520,0,0" x:Name="ChatSendContentBox" IsTextPredictionEnabled="True" IsSpellCheckEnabled="True"></TextBox>
-            <Button Content="发送" VerticalAlignment="Center" Margin="660,522.5,0,0" Background="Green"></Button>
+            <Button Content="发送" VerticalAlignment="Center" Margin="660,522.5,0,0" Background="Green" x:Name="SendBtn"></Button>
             <Button VerticalAlignment="Center" Margin="730,522.5,0,0">
                 <StackPanel>
                     <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8b7;"></FontIcon>

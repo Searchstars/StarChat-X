@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation and Contributors.
+﻿// Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
 using Microsoft.UI.Xaml;
@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using MongoDB.Bson.Serialization.Serializers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,6 +32,8 @@ namespace StarChat
             this.InitializeComponent();
         }
 
+        public static int inputuid;
+
         private void Button_Click(object sender, RoutedEventArgs e)//Search User
         {
 
@@ -38,8 +41,8 @@ namespace StarChat
             {
                 var cd = new ContentDialog
                 {
-                    Title = "�޷�������UID",
-                    Content = "�������ӹٷ�������Ϊ����",
+                    Title = "无法搜索该UID",
+                    Content = "不能添加官方机器人为好友",
                     CloseButtonText = "OK",
                     DefaultButton = ContentDialogButton.Close
                 };
@@ -60,15 +63,60 @@ namespace StarChat
                     ProtoBuf.Serializer.Serialize(memoryStream, uidtonameproto);
                     if (StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray())).Contains("ERR"))
                     {
-                        SearchStatUser.Text = "���û������ڣ���˶�uid�Ƿ���ȷ";
+                        SearchStatUser.Text = "该用户不存在，请核对uid是否正确";
+                        SearchUser_SendReq_Button.IsEnabled= false;
                     }
                     else
                     {
-                        SearchStatUser.Text = "�û�����" + StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
+                        SearchStatUser.Text = "用户名：" + StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
+                        inputuid = int.Parse(SearchUser_TextBox_Uid.Text);
                         SearchUser_SendReq_Button.IsEnabled = true;
                     }
                 }
 
+            }
+        }
+
+        private void SearchUser_SendReq_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var sendaddfriendreqproto = new ProtobufSendAddFriendRequestReq
+            {
+                targetuid = inputuid,
+                token = RunningDataSave.token,
+                uid = RunningDataSave.useruid
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                if (SearchUser_TextBox_Uid.Text == RunningDataSave.useruid.ToString())
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "蚌埠住了兄弟们",
+                        Content = "真要给自己发好友申请啊，什么寄吧人格分裂症😅",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    cd.ShowAsync();
+                }
+                else
+                {
+                    ProtoBuf.Serializer.Serialize(memoryStream, sendaddfriendreqproto);
+                    var ret = StarChatReq.SendAddFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
+                    LogWriter.LogInfo("发送好友请求ret：" + ret);
+                    if (ret.Contains("ok"))
+                    {
+                        var cd = new ContentDialog
+                        {
+                            Title = "成功",
+                            Content = "好友请求已发送，火速让你朋友同意",
+                            CloseButtonText = "OK",
+                            DefaultButton = ContentDialogButton.Close
+                        };
+                        cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                        cd.ShowAsync();
+                    }
+                }
             }
         }
     }

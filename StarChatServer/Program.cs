@@ -11,6 +11,7 @@ using MongoDB.Driver.Core.Configuration;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using ProtoBuf;
+using SharpCompress.Writers;
 
 namespace StarChatServer
 {
@@ -82,6 +83,11 @@ namespace StarChatServer
                     new BsonDocument{ { "id", "1" }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"哈喽哇？不知道怎么使用？给我发个/help吧！当然，你也可以查看：\"},{\"msg_send_time\": \"dont_view\",\"msgtype\":\"hyperlink\",\"msglink\":\"https://chat.stargazing.studio/documents\",\"msgcontent\":\"官方文档\"}]" } }
                 }
             },
+            { "FriendRequests" , new BsonArray
+            {
+
+            }
+            }
         }
     };
             dbcollection_account.InsertMany(doc);
@@ -153,6 +159,10 @@ namespace StarChatServer
                 {
                     SSE_ListenMsgReqAsync(ctx);
                 }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/AddFriendReq")
+                {
+                    AddFriendReqAsync(req, resp);
+                }
                 else
                 {
                     // Write the response info
@@ -164,6 +174,66 @@ namespace StarChatServer
                     resp.ContentLength64 = data.LongLength;
                     // Write out to the response stream (asynchronously), then close it
                     await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                    resp.Close();
+                }
+            }
+        }
+
+        static async Task AddFriendReqAsync(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            using (var body = req.InputStream)
+            using (var reader = new StreamReader(body, req.ContentEncoding))
+            {
+                var data_poststr = reader.ReadToEnd();
+                var data = Convert.FromBase64String(data_poststr);
+
+                try
+                {
+                    var a = Serializer.Deserialize<ProtobufSendAddFriendRequestReq>(new MemoryStream(data));
+
+                    var Tryfilter = Builders<BsonDocument>.Filter.Eq("tk", a.token);
+                    var Tryprojection = Builders<BsonDocument>.Projection.Include("tk");
+                    var Tryresult = await dbcollection_tokens.Find(Tryfilter).Project(Tryprojection).FirstOrDefaultAsync();
+
+                    if (Tryresult == null)
+                    {
+                        throw new Exception("Token not found");
+                    }
+
+                    if (sse_dict.ContainsKey(a.targetuid))
+                    {
+                        var writer = new StreamWriter(sse_dict[a.targetuid].Response.OutputStream);
+                        var message = $"data: {"newaddfriendreq>" + a.targetuid.ToString() + ">" + ""}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }
+
+                    var filter = Builders<BsonDocument>.Filter.Eq("uid", a.targetuid);
+                    var projection = Builders<BsonDocument>.Projection.Include("FriendRequests");
+                    var result = await dbcollection_account.Find(filter).Project(projection).FirstOrDefaultAsync();
+
+                    var update = Builders<BsonDocument>.Update.AddToSet("FriendRequests", new BsonDocument("id",a.uid));
+
+                    dbcollection_account.UpdateOne(filter,update);
+
+                    var dataBytes = Encoding.UTF8.GetBytes("success>^<ok");
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+
+                    await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                }
+                catch (Exception e)
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(e.ToString());
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+
+                    await resp.OutputStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                }
+                finally
+                {
                     resp.Close();
                 }
             }
@@ -496,7 +566,7 @@ namespace StarChatServer
             Console.WriteLine("SSE Dict Check Start!");
             while (true)
             {
-                Console.WriteLine("while");
+                //Console.WriteLine("while");
                 foreach (int key in sse_dict.Keys)
                 {
 
@@ -504,7 +574,7 @@ namespace StarChatServer
                     {
                         var writer = new StreamWriter(sse_dict[key].Response.OutputStream);
 
-                        var message = $"data: {"sse_event>checklive"}\n\n";
+                        var message = $"data: {"sse_event>checklive>" + DateTime.Now}\n\n";
                         await writer.WriteAsync(message);
                         await writer.FlushAsync();
                     }
