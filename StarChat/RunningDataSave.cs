@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Windows.Devices.Geolocation;
 
 namespace StarChat
 {
@@ -31,5 +32,7 @@ namespace StarChat
         public static int chatframe_targetid = 0;
 
         public static NavigationView chatwindow_nav_static = null;
+
+        public static StackPanel newreqlist_stackpanel = null;
     }
 }

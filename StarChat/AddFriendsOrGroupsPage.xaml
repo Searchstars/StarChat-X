@@ -32,7 +32,7 @@
             <PivotItem Header="我收到的请求">
                 <!--Pivot content goes here-->
                 <ScrollViewer Margin="0,30,0,0">
-                    <StackPanel Width="1050">
+                    <StackPanel Width="1050" x:Name="newfrilist_StackPanel">
                         <Border CornerRadius="10">
                             <Grid Background="	#06ffffff" Height="75" Width="7000">
                                 <TextBlock Margin="25" Text="好友请求：" FontSize="16"></TextBlock>

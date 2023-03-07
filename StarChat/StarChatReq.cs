@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Microsoft.UI.Xaml.Controls;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using static System.Resources.ResXFileRef;
 
 namespace StarChat
 {
@@ -15,6 +16,10 @@ namespace StarChat
     {
 
         public static string http_or_https = "http://";
+
+        public static int sse_recv_count = 0;
+
+        public static int lacheck_sse_recv_count = 0;
 
         public static string ClientUserLoginReq(string protob64)
         {
@@ -292,6 +297,32 @@ namespace StarChat
             HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
             StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
             SSEMsgRecv(streamReader);
+            CheckSSEConnectionStat();
+        }
+
+        static async Task CheckSSEConnectionStat()
+        {
+            while (true)
+            {
+                await Task.Delay(8000);
+                if(lacheck_sse_recv_count == sse_recv_count)
+                {
+                    LogWriter.LogWarn("SSE超时，给予用户警告弹窗");
+                    var cd = new ContentDialog
+                    {
+                        Title = "网络连接出现问题",
+                        Content = "你可能注意到群聊或好友的消息突然停下来了，这是客户端过久没收到来自服务器的消息导致的。若此弹窗在短期内反复出现，可能是你的网络已断开，若此弹窗会不定时的间隔超过10秒出现或只是偶尔出现几次，则可能是你的网络连接速率过于缓慢",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    await cd.ShowAsync();
+                }
+                else
+                {
+                    lacheck_sse_recv_count = sse_recv_count;
+                }
+            }
         }
 
         static async Task SSEMsgRecv(StreamReader streamReader)
@@ -305,6 +336,7 @@ namespace StarChat
                 }
                 else if (line.StartsWith("data: "))
                 {
+                    sse_recv_count++;
                     var data = line.Substring("data: ".Length);
                     if (data.Contains("checklive"))
                     {
@@ -315,12 +347,45 @@ namespace StarChat
                         LogWriter.LogInfo(data);
 
                     }
-
+                    if (data.Length <= 0)
+                    {
+                        LogWriter.LogWarn("SSE状态异常，给予用户警告弹窗");
+                        var cd = new ContentDialog
+                        {
+                            Title = "网络连接中断",
+                            Content = "服务器返回了空消息，这大概率是你的网络异常，或是StarChat的服务器被关闭，StarChat将退出",
+                            CloseButtonText = "OK",
+                            DefaultButton = ContentDialogButton.Close
+                        };
+                        cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                        await cd.ShowAsync();
+                        Environment.Exit(0);
+                    }
                     if (data.Split(">")[0] == "newaddfriendreq")
                     {
-                        if(RunningDataSave.chatwindow_nav_static.SelectedItem == RunningDataSave.chatwindow_nav_static.MenuItems[2])
+                        string hexColorCode = "#06ffffff"; // Replace with your HEX color code
+                        Windows.UI.Color color = Windows.UI.Color.FromArgb(
+                            byte.Parse(hexColorCode.Substring(1, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(hexColorCode.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(hexColorCode.Substring(5, 2), System.Globalization.NumberStyles.HexNumber),
+                            byte.Parse(hexColorCode.Substring(7, 2), System.Globalization.NumberStyles.HexNumber)
+                        );
+                        if (RunningDataSave.chatwindow_nav_static.SelectedItem == RunningDataSave.chatwindow_nav_static.MenuItems[2])
                         {
+                            Border bd = new Border {
+                                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(10),
+                                Child = new Grid
+                                {
+                                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(color),
+                                    Height = 75,
+                                    Width = 7000,
+                                    Children =
+                                    {
 
+                                    }
+                                }
+                            };
+                            RunningDataSave.newreqlist_stackpanel.Children.Add(bd);
                         }
                     }
                 }

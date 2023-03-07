@@ -30,6 +30,7 @@ namespace StarChat
         public AddFriendsOrGroupsPage()
         {
             this.InitializeComponent();
+            RunningDataSave.newreqlist_stackpanel = newfrilist_StackPanel;
         }
 
         public static int inputuid;
