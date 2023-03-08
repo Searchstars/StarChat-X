@@ -33,23 +33,6 @@
                 <!--Pivot content goes here-->
                 <ScrollViewer Margin="0,30,0,0">
                     <StackPanel Width="1050" x:Name="newfrilist_StackPanel">
-                        <Border CornerRadius="10">
-                            <Grid Background="	#06ffffff" Height="75" Width="7000">
-                                <TextBlock Margin="25" Text="好友请求：" FontSize="16"></TextBlock>
-                                <TextBlock Margin="102,25" Text="来自 TestUser（UID: 888）" FontSize="16"></TextBlock>
-                                <Button Margin="860,0" Content="同意"></Button>
-                                <Button Margin="950,0" Content="拒绝"></Button>
-                            </Grid>
-                        </Border>
-                        <Image Height="20"></Image>
-                        <Border CornerRadius="10">
-                            <Grid Background="	#06ffffff" Height="75" Width="7000">
-                                <TextBlock Margin="25" Text="好友请求：" FontSize="16"></TextBlock>
-                                <TextBlock Margin="102,25" Text="来自 鸡你太美你干嘛（UID: 114）" FontSize="16"></TextBlock>
-                                <Button Margin="860,0" Content="同意"></Button>
-                                <Button Margin="950,0" Content="拒绝"></Button>
-                            </Grid>
-                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </PivotItem>

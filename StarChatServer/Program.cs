@@ -222,7 +222,7 @@ namespace StarChatServer
                 if (sse_dict.ContainsKey(request.targetuid))
                 {
                     var writer = new StreamWriter(sse_dict[request.targetuid].Response.OutputStream);
-                    var message = $"data: {"newaddfriendreq>" + request.targetuid.ToString() + ">" + ""}\n\n";
+                    var message = $"data: {"newaddfriendreq>" + request.targetuid.ToString() + ">" + "nomsg"}\n\n";
                     await writer.WriteAsync(message);
                     await writer.FlushAsync();
                 }
