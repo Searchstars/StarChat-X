@@ -15,6 +15,11 @@ namespace StarChat
         public string id { get; set; }
     }
 
+    public class JsonFriendRequestsList
+    {
+        public string id { get; set; }
+    }
+
     public class JsonChatHistory
     {
         /// <summary>

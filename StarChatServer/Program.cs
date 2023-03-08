@@ -163,6 +163,10 @@ namespace StarChatServer
                 {
                     AddFriendReqAsync(req, resp);
                 }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetMyRequestsReq")
+                {
+                    GetMyRequestsReq(req,resp);
+                }
                 else
                 {
                     // Write the response info
@@ -204,6 +208,24 @@ namespace StarChatServer
             resp.ContentLength64 = dataBytes.LongLength;
             resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
             resp.Close();
+        }
+
+        static async Task GetMyRequestsReq(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufGetMyRequestsReq>(new MemoryStream(requestData));
+
+            var tokenExists = await CheckTokenExists(request.token);
+
+            if (!tokenExists)
+            {
+                SetResponseContent(resp,"你说得对，但是token error");
+                return;
+            }
+
+            var filter = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
+            var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
+            SetResponseContent(resp, "success>^<" + result["FriendRequests"].ToJson());
         }
 
         static async Task AddFriendReqAsync(HttpListenerRequest req, HttpListenerResponse resp)
