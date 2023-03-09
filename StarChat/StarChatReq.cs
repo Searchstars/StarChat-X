@@ -470,6 +470,7 @@ namespace StarChat
                         );
                         if (RunningDataSave.chatwindow_nav_static.SelectedItem == RunningDataSave.chatwindow_nav_static.MenuItems[2])
                         {
+                            LogWriter.LogInfo("add");
                             var id_to_name_res = "";
                             var utnproto = new ProtobufUidToUserName
                             {

@@ -201,6 +201,10 @@ namespace StarChat
                     }
                 }
             }
+            else
+            {
+                newfrilist_StackPanel.Children.Clear();
+            }
         }
     }
 }
