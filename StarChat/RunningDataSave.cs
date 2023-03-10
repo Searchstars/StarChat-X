@@ -34,5 +34,7 @@ namespace StarChat
         public static NavigationView chatwindow_nav_static = null;
 
         public static StackPanel newreqlist_stackpanel = null;
+
+        public static Pivot addfriorgrouppage_pivot = null;
     }
 }

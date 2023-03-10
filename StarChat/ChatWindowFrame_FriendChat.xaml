@@ -29,6 +29,7 @@
                 <StackPanel x:Name="sp_chatcontent">
                 </StackPanel>
             </ScrollViewer>
+            <Button Content="..." Margin="820,-550,0,0"></Button>
         </Grid>
     </Border>
 </Page>

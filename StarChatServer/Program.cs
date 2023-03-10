@@ -167,11 +167,23 @@ namespace StarChatServer
                 {
                     GetMyRequestsReq(req,resp);
                 }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/AllowFriendRequest")
+                {
+                    AllowFriendRequest(req, resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/RejectFriendRequest")
+                {
+                    RejectFriendRequest(req, resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetFriendsList")
+                {
+                    GetFriendsList(req, resp);
+                }
                 else
                 {
                     // Write the response info
                     string disableSubmit = !runServer ? "disabled" : "";
-                    byte[] data = Encoding.UTF8.GetBytes("404 Not Found<br/><image style=\"color: black;width: 600;height: 2; background-color: black\"/><br/>Simple C# HTTP Server For StarChat 20230211<br/>" + req.UserAgent + "<br/>" + req.RawUrl);
+                    byte[] data = Encoding.UTF8.GetBytes("Congratulations on finding the address of the StarChat server, but please do not visit a non-existent page :(<br/>Why not use DnSpy to decompile StarChat first? :)<br/>Fun fact: StarChat was actually an open-source software, but its code was so bad :( you should understand.<br/><br/><image style=\"color: black;width: 600;height: 2; background-color: black\"/><br/>Simple C# HTTP Server For StarChat 20230310<br/>" + req.UserAgent + "<br/>" + req.RawUrl);
                     resp.ContentType = "text/html";
                     resp.ContentEncoding = Encoding.UTF8;
 
@@ -181,6 +193,73 @@ namespace StarChatServer
                     resp.Close();
                 }
             }
+        }
+
+        static async Task GetFriendsList(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufGetFriendsList>(new MemoryStream(requestData));
+
+            var tokenExists = await CheckTokenExists(request.token);
+
+            if (!tokenExists)
+            {
+                SetResponseContent(resp, "你说得对，但是token error");
+                return;
+            }
+
+            var filter = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
+            var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
+
+            SetResponseContent(resp, "success>^<" + result["Friends"].ToJson());
+        }
+
+        static async Task AllowFriendRequest(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufSendAllowFriendRequestReq>(new MemoryStream(requestData));
+
+            var tokenExists = await CheckTokenExists(request.token);
+
+            if (!tokenExists)
+            {
+                SetResponseContent(resp, "success>^<" + "你说得对，但是token error");
+                return;
+            }
+
+            var filter = Builders<BsonDocument>.Filter.Eq("uid", request.targetuid);
+            var update = Builders<BsonDocument>.Update.AddToSet("Friends", new BsonDocument { { "id", request.uid }, { "chat_history", "[]" } });
+            await dbcollection_account.UpdateOneAsync(filter, update);
+
+            filter = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
+            update = Builders<BsonDocument>.Update.AddToSet("Friends", new BsonDocument { { "id", request.targetuid }, { "chat_history", "[]" } });
+            await dbcollection_account.UpdateOneAsync(filter, update);
+
+            var filter_r = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
+            var update_r = Builders<BsonDocument>.Update.Pull("FriendRequests", new BsonDocument ("id",request.targetuid));
+            await dbcollection_account.UpdateOneAsync(filter_r, update_r);
+
+            SetResponseContent(resp,"success>^<ok");
+        }
+
+        static async Task RejectFriendRequest(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufSendRejectFriendRequestReq>(new MemoryStream(requestData));
+
+            var tokenExists = await CheckTokenExists(request.token);
+
+            if (!tokenExists)
+            {
+                SetResponseContent(resp, "你说得对，但是token error");
+                return;
+            }
+
+            var filter_r = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
+            var update_r = Builders<BsonDocument>.Update.Pull("FriendRequests", new BsonDocument("id", request.targetuid));
+            await dbcollection_account.UpdateOneAsync(filter_r, update_r);
+
+            SetResponseContent(resp, "success>^<ok");
         }
 
         private static async Task<byte[]> ReadRequestData(HttpListenerRequest req)
@@ -244,7 +323,7 @@ namespace StarChatServer
                 if (sse_dict.ContainsKey(request.targetuid))
                 {
                     var writer = new StreamWriter(sse_dict[request.targetuid].Response.OutputStream);
-                    var message = $"data: {"newaddfriendreq>" + request.targetuid.ToString() + ">" + "nomsg"}\n\n";
+                    var message = $"data: {"newaddfriendreq>" + request.uid.ToString() + ">" + "nomsg"}\n\n";
                     await writer.WriteAsync(message);
                     await writer.FlushAsync();
                 }

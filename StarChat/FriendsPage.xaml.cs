@@ -32,6 +32,17 @@ namespace StarChat
         public FriendsPage()
         {
             this.InitializeComponent();
+            var getfrilist = new ProtobufGetFriendsList
+            {
+                uid = RunningDataSave.useruid,
+                token = RunningDataSave.token
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, getfrilist);
+                var result = StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
+                RunningDataSave.friends_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendsList>>(result);
+            }
             foreach (var item in RunningDataSave.friends_list)
             {
                 var uidtonameproto = new ProtobufUidToUserName

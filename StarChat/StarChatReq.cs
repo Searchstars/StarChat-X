@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using static System.Resources.ResXFileRef;
+using Microsoft.Toolkit.Uwp.Notifications;
 
 namespace StarChat
 {
@@ -238,7 +239,7 @@ namespace StarChat
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/AllowFriendReq");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/AllowFriendRequest");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -336,7 +337,56 @@ namespace StarChat
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/RejectFriendReq");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/RejectFriendRequest");
+                //字符串转换为字节码
+                byte[] bs = Encoding.UTF8.GetBytes(protob64);
+                httpWebRequest.ContentType = "application/text";
+                httpWebRequest.ContentLength = bs.Length;
+                httpWebRequest.Method = "POST";
+                httpWebRequest.Timeout = 20000;
+                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
+                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+                string responseContent = streamReader.ReadToEnd();
+                streamReader.Close();
+                httpWebResponse.Close();
+                httpWebRequest.Abort();
+                if (responseContent.Contains("success>^<"))
+                {
+                    return responseContent.Split("success>^<")[1];
+                }
+                else
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = "您的账号数据有问题，请联系开发者重置",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    return "ERR: " + responseContent;
+                }
+            }
+            catch (Exception e)
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "StarChat程序错误",
+                    Content = e,
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                return "ERR";
+            }
+        }
+
+        public static string GetFriendsListReq(string protob64)
+        {
+            try
+            {
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetFriendsList");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -482,7 +532,22 @@ namespace StarChat
                                 ProtoBuf.Serializer.Serialize(memoryStream, utnproto);
                                 id_to_name_res = GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
                             }
-                            Border bd = new Border {
+                            Button AllowReqFriBt = new Button
+                            {
+                                Margin = new Microsoft.UI.Xaml.Thickness(860, 0, 0, 0),
+                                Content = "同意",
+                                Tag = "accept_friend_req_uid=" + data.Split(">")[1],
+                            };
+                            AllowReqFriBt.Click += AddFriendsOrGroupsPage.AllowFriendReqById;
+                            Button RejectReqFriBt = new Button
+                            {
+                                Margin = new Microsoft.UI.Xaml.Thickness(950, 0, 0, 0),
+                                Content = "拒绝",
+                                Tag = "reject_friend_req_uid=" + data.Split(">")[1],
+                            };
+                            RejectReqFriBt.Click += AddFriendsOrGroupsPage.RejectFriendReqById;
+                            Border bd = new Border
+                            {
                                 CornerRadius = new Microsoft.UI.Xaml.CornerRadius(10),
                                 Child = new Grid
                                 {
@@ -501,25 +566,19 @@ namespace StarChat
                                         {
                                             Margin = new Microsoft.UI.Xaml.Thickness(102,25,0,0),
                                             Text = "来自 " + id_to_name_res + "（UID：" + data.Split(">")[1] + "）",
-                                            FontSize = 16
+                                            FontSize = 16,
                                         },
-                                        new Button
-                                        {
-                                            Margin = new Microsoft.UI.Xaml.Thickness(860,0,0,0),
-                                            Content = "同意",
-                                            Tag = "accept_friend_req_uid=" + data.Split(">")[1]
-                                        },
-                                        new Button
-                                        {
-                                            Margin = new Microsoft.UI.Xaml.Thickness(950,0,0,0),
-                                            Content = "拒绝",
-                                            Tag = "reject_friend_req_uid=" + data.Split(">")[1]
-                                        }
+                                        AllowReqFriBt,
+                                        RejectReqFriBt
                                     }
                                 }
                             };
                             RunningDataSave.newreqlist_stackpanel.Children.Add(bd);
-                            RunningDataSave.newreqlist_stackpanel.Children.Add(new Image {Height=20});
+                            RunningDataSave.newreqlist_stackpanel.Children.Add(new Image { Height = 20 });
+                            new ToastContentBuilder()
+                                .AddText("StarChat")
+                                .AddText("收到新的好友请求！\n来自：" + id_to_name_res)
+                                .Show();
                         }
                     }
                 }

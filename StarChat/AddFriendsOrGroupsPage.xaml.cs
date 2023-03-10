@@ -34,6 +34,7 @@ namespace StarChat
         {
             this.InitializeComponent();
             RunningDataSave.newreqlist_stackpanel = newfrilist_StackPanel;
+            RunningDataSave.addfriorgrouppage_pivot = rootPivot;
         }
 
         public static int inputuid;
@@ -124,6 +125,88 @@ namespace StarChat
             }
         }
 
+        public static void AllowFriendReqById(object sender, RoutedEventArgs e)
+        {
+            Button senderbt = sender as Button;
+            LogWriter.LogInfo("Allow Friend Req Button Clicked. Tag=" + senderbt.Tag);
+            var allwproto = new ProtobufSendAllowFriendRequestReq
+            {
+                targetuid = int.Parse(senderbt.Tag.ToString().Split("=")[1]),
+                uid = RunningDataSave.useruid,
+                token = RunningDataSave.token
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, allwproto);
+                var result = StarChatReq.SendAllowFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
+                if (result != "ok")
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "AllowFriendRequest异常",
+                        Content = "unkown errors",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    cd.ShowAsync();
+                }
+            }
+            RunningDataSave.addfriorgrouppage_pivot.SelectedIndex = 0;
+            var getfrilist = new ProtobufGetFriendsList
+            {
+                uid = RunningDataSave.useruid,
+                token = RunningDataSave.token
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, getfrilist);
+                var result = StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
+                RunningDataSave.friends_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendsList>>(result);
+            }
+        }
+
+        public static void RejectFriendReqById(object sender, RoutedEventArgs e)
+        {
+            Button senderbt = sender as Button;
+            LogWriter.LogInfo("Reject Friend Req Button Clicked. Tag=" + senderbt.Tag);
+            var rejeproto = new ProtobufSendRejectFriendRequestReq
+            {
+                targetuid = int.Parse(senderbt.Tag.ToString().Split("=")[1]),
+                uid = RunningDataSave.useruid,
+                token = RunningDataSave.token
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, rejeproto);
+                var result = StarChatReq.SendRejectFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
+                if (result != "ok")
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "AllowFriendRequest异常",
+                        Content = "unkown errors",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    cd.ShowAsync();
+                }
+            }
+            RunningDataSave.addfriorgrouppage_pivot.SelectedIndex = 0;
+            var getfrilist = new ProtobufGetFriendsList
+            {
+                uid = RunningDataSave.useruid,
+                token = RunningDataSave.token
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, getfrilist);
+                var result = StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
+                RunningDataSave.friends_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendsList>>(result);
+            }
+        }
+
         private void rootPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             LogWriter.LogInfo("添加好友或群组Page Pivot SelectionChanged触发，SelectedIndex为：" + rootPivot.SelectedIndex.ToString());
@@ -159,6 +242,20 @@ namespace StarChat
                             ProtoBuf.Serializer.Serialize(memoryStream2, utnproto);
                             id_to_name_res = StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream2.ToArray()));
                         }
+                        Button AllowReqFriBt = new Button
+                        {
+                            Margin = new Microsoft.UI.Xaml.Thickness(860, 0, 0, 0),
+                            Content = "同意",
+                            Tag = "accept_friend_req_uid=" + i.id,
+                        };
+                        AllowReqFriBt.Click += AddFriendsOrGroupsPage.AllowFriendReqById;
+                        Button RejectReqFriBt = new Button
+                        {
+                            Margin = new Microsoft.UI.Xaml.Thickness(950, 0, 0, 0),
+                            Content = "拒绝",
+                            Tag = "reject_friend_req_uid=" + i.id,
+                        };
+                        RejectReqFriBt.Click += AddFriendsOrGroupsPage.RejectFriendReqById;
                         Border bd = new Border
                         {
                             CornerRadius = new Microsoft.UI.Xaml.CornerRadius(10),
@@ -179,20 +276,10 @@ namespace StarChat
                                         {
                                             Margin = new Microsoft.UI.Xaml.Thickness(102,25,0,0),
                                             Text = "来自 " + id_to_name_res + "（UID：" + i.id + "）",
-                                            FontSize = 16
+                                            FontSize = 16,
                                         },
-                                        new Button
-                                        {
-                                            Margin = new Microsoft.UI.Xaml.Thickness(860,0,0,0),
-                                            Content = "同意",
-                                            Tag = "accept_friend_req_uid=" + i.id
-                                        },
-                                        new Button
-                                        {
-                                            Margin = new Microsoft.UI.Xaml.Thickness(950,0,0,0),
-                                            Content = "拒绝",
-                                            Tag = "reject_friend_req_uid=" + i.id
-                                        }
+                                        AllowReqFriBt,
+                                        RejectReqFriBt
                                     }
                             }
                         };
