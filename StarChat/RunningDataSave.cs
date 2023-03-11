@@ -38,5 +38,7 @@ namespace StarChat
         public static Pivot addfriorgrouppage_pivot = null;
 
         public static StackPanel friendchatframe_sp_chatcontent = null;
+
+        public static ScrollViewer scrollviewer_chatcontent = null;
     }
 }

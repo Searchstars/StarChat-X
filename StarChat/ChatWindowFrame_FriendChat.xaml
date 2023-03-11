@@ -25,7 +25,7 @@
                     <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe899;"></FontIcon>
                 </StackPanel>
             </Button>
-            <ScrollViewer Height="520" Width="840" Margin="-10,-70,0,0" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Height="520" Width="840" Margin="-10,-70,0,0" VerticalScrollBarVisibility="Auto" x:Name="scrollviewer_chatcontent">
                 <StackPanel x:Name="sp_chatcontent">
                 </StackPanel>
             </ScrollViewer>

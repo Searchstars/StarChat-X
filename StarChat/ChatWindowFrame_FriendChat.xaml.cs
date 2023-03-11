@@ -17,6 +17,8 @@ using System.Net;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Drawing;
 using Microsoft.Win32;
+using Windows.Foundation;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -36,6 +38,8 @@ namespace StarChat
         public static JsonMemesWarningList memes_warn_list = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonMemesWarningList>(File.ReadAllText("memes_warning_list.json"));
 
         public static JsonObsceneBlockList obscene_warn_list = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonObsceneBlockList>(File.ReadAllText("obscene_text_block_list.json"));
+
+        public static bool all_chathistory_place_ok = false;
 
         public async void InitChatHistory()
         {
@@ -85,6 +89,7 @@ namespace StarChat
                         });
                     }
                 }
+                all_chathistory_place_ok = true;
             }
             if (Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").GetValue("AppsUseLightTheme").ToString() == "1")
             {
@@ -93,11 +98,24 @@ namespace StarChat
             }
         }
 
+        public async Task scroll_to_under()
+        {
+            while (true)
+            {
+                await Task.Delay(500);
+                LogWriter.LogInfo("changeview");
+                scrollviewer_chatcontent.ChangeView(null, scrollviewer_chatcontent.ExtentHeight, null, false);
+                break;
+            }
+        }
+
         public ChatWindowFrame_FriendChat()
         {
+            RunningDataSave.scrollviewer_chatcontent = this.scrollviewer_chatcontent;
             this.InitializeComponent();
             RunningDataSave.friendchatframe_sp_chatcontent = this.sp_chatcontent;
             InitChatHistory();
+            scroll_to_under();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)//SendFile Onclick

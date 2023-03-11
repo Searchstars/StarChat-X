@@ -729,6 +729,7 @@ namespace StarChat
                                     Margin = new Thickness(30, 20, 0, 0),
                                 });
                             }
+                            //RunningDataSave.scrollviewer_chatcontent.ChangeView(null, RunningDataSave.scrollviewer_chatcontent.ExtentHeight, null, false);
                         }
                     }
                 }
