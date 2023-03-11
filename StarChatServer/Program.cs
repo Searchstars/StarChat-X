@@ -12,6 +12,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using ProtoBuf;
 using SharpCompress.Writers;
+using System.Text.Unicode;
+using System.Security.Cryptography;
 
 namespace StarChatServer
 {
@@ -24,6 +26,7 @@ namespace StarChatServer
         public static IMongoCollection<BsonDocument> dbcollection_test = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("test");
         public static IMongoCollection<BsonDocument> dbcollection_account = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("accounts");
         public static IMongoCollection<BsonDocument> dbcollection_tokens = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("tokens");
+        public static IMongoCollection<BsonDocument> dbcollection_logs = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("logs");
         public static int pageViews = 0;
         public static int requestCount = 0;
         public static string pageData = "Welcome to StarChat Server";
@@ -74,13 +77,13 @@ namespace StarChatServer
             { "banreason", "该账号未被封禁，若您看到了这段信息，请联系开发者" },
             { "JoinedGroups", new BsonArray
                 {
-                    new BsonDocument{ { "id", "1" }},
+                    new BsonDocument{ { "id", 1 }},
                 }
             },
             { "Friends", new BsonArray
                 {
-                    new BsonDocument{ { "id", "0" }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"shhhh...看起来，这里有一个新来的？\n别再等啦！查看官方wiki并加入官方群组，开始你的StarChat之旅！\nWelcome to StarChat !\"}]" } },
-                    new BsonDocument{ { "id", "1" }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"哈喽哇？不知道怎么使用？给我发个/help吧！当然，你也可以查看：\"},{\"msg_send_time\": \"dont_view\",\"msgtype\":\"hyperlink\",\"msglink\":\"https://chat.stargazing.studio/documents\",\"msgcontent\":\"官方文档\"}]" } }
+                    new BsonDocument{ { "id", 0 }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"shhhh...看起来，这里有一个新来的？\n别再等啦！查看官方wiki并加入官方群组，开始你的StarChat之旅！\nWelcome to StarChat !\"}]" } },
+                    new BsonDocument{ { "id", 1 }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"哈喽哇？不知道怎么使用？给我发个/help吧！当然，你也可以查看：\"},{\"msg_send_time\": \"dont_view\",\"msgtype\":\"hyperlink\",\"msglink\":\"https://chat.stargazing.studio/documents\",\"msgcontent\":\"官方文档\"}]" } }
                 }
             },
             { "FriendRequests" , new BsonArray
@@ -141,19 +144,19 @@ namespace StarChatServer
                 }
                 else if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/ClientUserLoginReq"))
                 {
-                    LoginPostReqAsync(req,resp);
+                    LoginPostReqAsync(req, resp);
                 }
                 else if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/ClientUserRegisterReq"))
                 {
-                    RegisterPostReqAsync(req,resp);
+                    RegisterPostReqAsync(req, resp);
                 }
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetFriendNameFromId")
                 {
-                    GetFriendNameFromIdAsync(req,resp);
+                    GetFriendNameFromIdAsync(req, resp);
                 }
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetChatHistory")
                 {
-                    GetChatHistoryAsync(req,resp);
+                    GetChatHistoryAsync(req, resp);
                 }
                 else if ((req.Headers["Accept"] == "text/event-stream") && (req.Url.AbsolutePath == "/ListenMsg"))
                 {
@@ -165,7 +168,7 @@ namespace StarChatServer
                 }
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetMyRequestsReq")
                 {
-                    GetMyRequestsReq(req,resp);
+                    GetMyRequestsReq(req, resp);
                 }
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/AllowFriendRequest")
                 {
@@ -178,6 +181,14 @@ namespace StarChatServer
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetFriendsList")
                 {
                     GetFriendsList(req, resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/SendMessageReq")
+                {
+                    SendMsg(req, resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/clientlog_starchat_winui3_desktop")
+                {
+                    RecvLog(req, resp);
                 }
                 else
                 {
@@ -192,6 +203,116 @@ namespace StarChatServer
                     await resp.OutputStream.WriteAsync(data, 0, data.Length);
                     resp.Close();
                 }
+            }
+        }
+
+        static async Task RecvLog(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufLogUpload>(new MemoryStream(requestData));
+
+            var doc = new[]
+            {
+                new BsonDocument{
+                    { "logstr_b64", request.logstr_b64},
+                    { "username", request.username },
+                    { "uid", request.uid },
+                    { "upload_timestamp", request.upload_timestamp },
+                    { "processlist", request.processlist },
+                    { "ComputerInfo",new BsonDocument
+                        {
+                            { "ip_addr", request.ComputerInfo.ip_addr},
+                            { "ram", request.ComputerInfo.ram},
+                            { "gpu", request.ComputerInfo.gpu},
+                            { "cpu", request.ComputerInfo.cpu},
+                            { "deviceid", request.ComputerInfo.deviceid},
+                        }
+                    }
+                }
+            };
+            dbcollection_logs.InsertMany(doc);
+            SetResponseContent(resp,"success>^<ok");
+        }
+
+        static async Task SendMsg(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufMessageSend>(new MemoryStream(requestData));
+
+            var tokenExists = await CheckTokenExists(request.token);
+
+            if (!tokenExists)
+            {
+                SetResponseContent(resp, "你说得对，但是token error");
+                return;
+            }
+
+            if(request.target_type == "friend")
+            {
+
+                List<JsonChatHistory> chathis_list = new List<JsonChatHistory>();
+
+                var filter_对方 = Builders<BsonDocument>.Filter.And(
+                    Builders<BsonDocument>.Filter.Eq("uid", request.targetid),
+                    Builders<BsonDocument>.Filter.ElemMatch("Friends", Builders<BsonDocument>.Filter.Eq("id",request.selfuid)));
+                var filter_自己 = Builders<BsonDocument>.Filter.And(
+                    Builders<BsonDocument>.Filter.Eq("uid", request.selfuid),
+                    Builders<BsonDocument>.Filter.ElemMatch("Friends", Builders<BsonDocument>.Filter.Eq("id", request.targetid)));
+                var update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", "{\"msg\": \"abca\"}");
+                var projection = Builders<BsonDocument>.Projection.Include("Friends.$");
+                var result = dbcollection_account.Find(filter_自己).Project(projection).FirstOrDefault();
+                if (result != null)
+                {
+                    var chatHistory = result["Friends"][0]["chat_history"].AsString;
+                    chathis_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonChatHistory>>(chatHistory);
+                }
+                else
+                {
+                    SetResponseContent(resp,"Server Error");
+                }
+                if (request.msg_type == "text")
+                {
+                    chathis_list.Add(new JsonChatHistory
+                    {
+                        msg_send_time = "dont_view",
+                        msgtype = "text",
+                        msglink = "dont_need",
+                        msgcontent = request.userchatname + ": " + request.msg_b64
+                    });
+                    update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", chathis_list.ToJson());
+                }
+                dbcollection_account.UpdateOne(filter_对方, update);
+                dbcollection_account.UpdateOne(filter_自己, update);
+
+                if (sse_dict.ContainsKey(request.targetid))
+                {
+                    var writer = new StreamWriter(sse_dict[request.targetid].Response.OutputStream);
+                    var message = $"data: {"newfrimsg>" + request.selfuid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new JsonChatHistory
+                    {
+                        msg_send_time = "dont_view",
+                        msgtype = "text",
+                        msglink = "dont_need",
+                        msgcontent = request.userchatname + ": " + request.msg_b64
+                    }.ToJson())))}\n\n";
+                    await writer.WriteAsync(message);
+                    await writer.FlushAsync();
+                }
+
+                if (sse_dict.ContainsKey(request.selfuid))
+                {
+                    var writer = new StreamWriter(sse_dict[request.selfuid].Response.OutputStream);
+                    var message = $"data: {"newfrimsg>" + request.targetid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new JsonChatHistory
+                    {
+                        msg_send_time = "dont_view",
+                        msgtype = "text",
+                        msglink = "dont_need",
+                        msgcontent = request.userchatname + ": " + request.msg_b64
+                    }.ToJson())))}\n\n";
+                    await writer.WriteAsync(message);
+                    await writer.FlushAsync();
+                }
+
+                SetResponseContent(resp,"success>^<ok");
             }
         }
 
@@ -228,11 +349,11 @@ namespace StarChatServer
             }
 
             var filter = Builders<BsonDocument>.Filter.Eq("uid", request.targetuid);
-            var update = Builders<BsonDocument>.Update.AddToSet("Friends", new BsonDocument { { "id", request.uid }, { "chat_history", "[]" } });
+            var update = Builders<BsonDocument>.Update.AddToSet("Friends", new BsonDocument { { "id", request.uid }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"placeholder\",\"msglink\":\"dont_need\",\"msgcontent\":\"\"}]" } });
             await dbcollection_account.UpdateOneAsync(filter, update);
 
             filter = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
-            update = Builders<BsonDocument>.Update.AddToSet("Friends", new BsonDocument { { "id", request.targetuid }, { "chat_history", "[]" } });
+            update = Builders<BsonDocument>.Update.AddToSet("Friends", new BsonDocument { { "id", request.targetuid }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"placeholder\",\"msglink\":\"dont_need\",\"msgcontent\":\"\"}]" } });
             await dbcollection_account.UpdateOneAsync(filter, update);
 
             var filter_r = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
@@ -454,7 +575,6 @@ namespace StarChatServer
             using (var body = req.InputStream)
             using (var reader = new StreamReader(body, req.ContentEncoding))
             {
-                Console.WriteLine("login");
                 var requestData = await ReadRequestData(req);
                 var request = Serializer.Deserialize<ProtobufLogin>(new MemoryStream(requestData));
                 Console.WriteLine($"ClientUserLoginReq  Username: {request.username} Password: {request.password}");
@@ -561,7 +681,7 @@ namespace StarChatServer
                     sse_dict.Remove(key);
                 }
 
-                await Task.Delay(3000); // Server tick 0.3s
+                await Task.Delay(1000); // Server tick 0.1s
             }
         }
 

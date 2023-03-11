@@ -227,31 +227,32 @@ namespace StarChat
     [ProtoContract]
     class ProtobufLogUpload
     {
-        /// <summary>
-        /// base64编码的日志字符串
-        /// </summary>
+        [ProtoMember(1)]
         public string logstr_b64 { get; set; }
-        /// <summary>
-        /// 用户名称
-        /// </summary>
+        [ProtoMember(2)]
         public string username { get; set; }
-        /// <summary>
-        /// 上传时的时间戳
-        /// </summary>
+        [ProtoMember(3)]
+        public string uid { get; set; }
+        [ProtoMember(4)]
         public long upload_timestamp { get; set; }
-        /// <summary>
-        /// 进程列表
-        /// </summary>
+        [ProtoMember(5)]
         public string processlist { get; set; }
-        /// <summary>
-        /// 用户电脑基本信息
-        /// </summary>
-        public class cmp_info
+
+        [ProtoMember(6)]
+        public CmpInfo ComputerInfo { get; set; }
+
+        [ProtoContract]
+        public class CmpInfo
         {
+            [ProtoMember(1)]
             public string ip_addr { get; set; }
+            [ProtoMember(2)]
             public string ram { get; set; }
+            [ProtoMember(3)]
             public string gpu { get; set; }
+            [ProtoMember(4)]
             public string cpu { get; set; }
+            [ProtoMember(5)]
             public string deviceid { get; set; }
         }
     }
@@ -272,7 +273,7 @@ namespace StarChat
         /// <summary>
         /// 用户名称
         /// </summary>
-        public string username { get; set; }
+        public string userchatname { get; set; }
         [ProtoMember(4)]
         /// <summary>
         /// 目标类型，friend或group
@@ -282,12 +283,12 @@ namespace StarChat
         /// <summary>
         /// 目标id，uid或gid
         /// </summary>
-        public string targetid { get; set; }
+        public int targetid { get; set; }
         [ProtoMember(6)]
         /// <summary>
         /// 消息发送者uid
         /// </summary>
-        public string selfuid { get; set; }
+        public int selfuid { get; set; }
         [ProtoMember(7)]
         /// <summary>
         /// token验证

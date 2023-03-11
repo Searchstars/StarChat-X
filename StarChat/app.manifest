@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.0.0.0" name="StarChat.app"/>
-
-  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+	<assemblyIdentity version="1.0.0.0" name="StarChat.app"/>
+	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
       <!--The ID below informs the system that this application is compatible with OS features first introduced in Windows 8. 
       For more info see https://docs.microsoft.com/windows/win32/sysinfo/targeting-your-application-at-windows-8-1 
@@ -22,4 +21,11 @@
       <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
     </windowsSettings>
   </application>
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+		<security>
+			<requestedPrivileges>
+				<requestedExecutionLevel />
+			</requestedPrivileges>
+		</security>
+	</trustInfo>
 </assembly>

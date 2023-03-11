@@ -31,6 +31,12 @@ namespace StarChat
 
         private Windows.UI.Text.Core.CoreTextEditContext _editContext;
 
+        public static int meme_content_send_count = 0;
+
+        public static JsonMemesWarningList memes_warn_list = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonMemesWarningList>(File.ReadAllText("memes_warning_list.json"));
+
+        public static JsonObsceneBlockList obscene_warn_list = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonObsceneBlockList>(File.ReadAllText("obscene_text_block_list.json"));
+
         public async void InitChatHistory()
         {
             var gethisproto = new ProtobufGetChatHistory
@@ -90,6 +96,7 @@ namespace StarChat
         public ChatWindowFrame_FriendChat()
         {
             this.InitializeComponent();
+            RunningDataSave.friendchatframe_sp_chatcontent = this.sp_chatcontent;
             InitChatHistory();
         }
 
@@ -117,6 +124,74 @@ namespace StarChat
             };
             cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
             cd.ShowAsync();
+        }
+
+        private async void SendBtn_Click(object sender, RoutedEventArgs e)//SendMsg Onclick
+        {
+            if(ChatSendContentBox.Text == "")
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "呃...",
+                    Content = "你是否知道，发送空消息是没有意义的？",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                cd.ShowAsync();
+            }
+            else if(meme_content_send_count >= 3)
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "梗含量警告",
+                    Content = "你可能是个很喜欢玩梗的人，以至于到处发送此类内容，但请注意，适度玩梗有助于活跃气氛，但一直玩梗很可能会让他人感到厌烦，甚至让不懂这些梗的人对你产生误解，请三思而后行",
+                    PrimaryButtonText = "仍然发送",
+                    CloseButtonText = "还是算了吧",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                var res_select = await cd.ShowAsync();
+                LogWriter.LogInfo("meme warn 用户选择：" + res_select);
+                if(res_select == ContentDialogResult.Primary)
+                {
+                    MsgSender.SendTextToFriend(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
+                }
+            }
+            else
+            {
+                foreach(var i in memes_warn_list.blocklist)
+                {
+                    if (ChatSendContentBox.Text.Contains(i))
+                    {
+                        meme_content_send_count ++;
+                        break;
+                    }
+                }
+                foreach (var k in obscene_warn_list.blocklist)
+                {
+                    if (ChatSendContentBox.Text.Contains(k))
+                    {
+                        var cd = new ContentDialog
+                        {
+                            Title = "内容警告",
+                            Content = "看起来你正在尝试发送一些含有暴力/歧视/色情/政治内容的消息，请慎重决定是否发送，这可能会导致你的账号被封禁",
+                            PrimaryButtonText = "仍然发送",
+                            CloseButtonText = "还是算了吧",
+                            DefaultButton = ContentDialogButton.Close
+                        };
+                        cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                        var res_select = await cd.ShowAsync();
+                        LogWriter.LogInfo("obscene warn 用户选择：" + res_select);
+                        if(res_select == ContentDialogResult.Primary)
+                        {
+                            MsgSender.SendTextToFriend(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
+                        }
+                        break;
+                    }
+                }
+                MsgSender.SendTextToFriend(ChatSendContentBox.Text,RunningDataSave.chatframe_targetid);
+            }
         }
     }
 }

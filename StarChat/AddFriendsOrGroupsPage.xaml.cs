@@ -73,7 +73,7 @@ namespace StarChat
                     }
                     else
                     {
-                        SearchStatUser.Text = "用户名：" + StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
+                        SearchStatUser.Text = "用户名：" + await StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
                         inputuid = int.Parse(SearchUser_TextBox_Uid.Text);
                         SearchUser_SendReq_Button.IsEnabled = true;
                     }

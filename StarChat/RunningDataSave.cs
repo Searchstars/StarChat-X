@@ -36,5 +36,7 @@ namespace StarChat
         public static StackPanel newreqlist_stackpanel = null;
 
         public static Pivot addfriorgrouppage_pivot = null;
+
+        public static StackPanel friendchatframe_sp_chatcontent = null;
     }
 }

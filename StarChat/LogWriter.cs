@@ -6,6 +6,11 @@ using System.Drawing;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.IO;
+using Newtonsoft.Json;
+using static Win32Api;
+using System.Diagnostics;
+using System.Linq;
+using MongoDB.Bson;
 
 namespace StarChat
 {
@@ -13,6 +18,39 @@ namespace StarChat
     {
 
         public static string now_log_file_name = "log-" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString() + ".txt";
+
+        public async static Task UploadLogToServerWhile()
+        {
+            while (true)
+            {
+                var settings = new JsonSerializerSettings();
+                settings.ContractResolver = new ProcessContractResolver();
+                Process[] processes = Process.GetProcesses();
+                string[] processNameList = processes.Select(p => p.ProcessName).ToArray();
+                var logproto = new ProtobufLogUpload
+                {
+                    logstr_b64 = Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(File.ReadAllText(now_log_file_name))),
+                    username = RunningDataSave.userchatname,
+                    uid = RunningDataSave.useruid.ToString(),
+                    upload_timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds(),
+                    processlist = processNameList.ToJson(),
+                    ComputerInfo = new ProtobufLogUpload.CmpInfo
+                    {
+                        ip_addr = RunningDataSave.user_ip_addr,
+                        ram = Win32Api.GetComputerInfo().Split("*&^")[0],
+                        gpu = Win32Api.GetComputerInfo().Split("*&^")[1],
+                        cpu = Win32Api.GetComputerInfo().Split("*&^")[2],
+                        deviceid = Win32Api.GetDeviceID()
+                    }
+                };
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    ProtoBuf.Serializer.Serialize(memoryStream, logproto);
+                    await StarChatReq.SendLogReq(Convert.ToBase64String(memoryStream.ToArray()));
+                }
+                await Task.Delay(30000);//30秒up一个log
+            }
+        }
 
         public async static void InitLogWriterStep1()
         {

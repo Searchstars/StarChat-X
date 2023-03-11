@@ -10,6 +10,8 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using static System.Resources.ResXFileRef;
 using Microsoft.Toolkit.Uwp.Notifications;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml;
 
 namespace StarChat
 {
@@ -440,6 +442,106 @@ namespace StarChat
             }
         }
 
+        public async static Task<string> SendMessageReq(string protob64)
+        {
+            try
+            {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/SendMessageReq");
+                //字符串转换为字节码
+                byte[] bs = Encoding.UTF8.GetBytes(protob64);
+                httpWebRequest.ContentType = "application/text";
+                httpWebRequest.ContentLength = bs.Length;
+                httpWebRequest.Method = "POST";
+                httpWebRequest.Timeout = 20000;
+                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
+                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+                string responseContent = streamReader.ReadToEnd();
+                streamReader.Close();
+                httpWebResponse.Close();
+                httpWebRequest.Abort();
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
+                {
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
+                }
+                else
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = "您的账号数据有问题，请联系开发者重置",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
+                }
+            }
+            catch (Exception e)
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "StarChat程序错误",
+                    Content = e,
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                return "ERR";
+            }
+        }
+
+        public async static Task<string> SendLogReq(string protob64)
+        {
+            try
+            {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/clientlog_starchat_winui3_desktop");
+                //字符串转换为字节码
+                byte[] bs = Encoding.UTF8.GetBytes(protob64);
+                httpWebRequest.ContentType = "application/text";
+                httpWebRequest.ContentLength = bs.Length;
+                httpWebRequest.Method = "POST";
+                httpWebRequest.Timeout = 20000;
+                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
+                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+                string responseContent = streamReader.ReadToEnd();
+                streamReader.Close();
+                httpWebResponse.Close();
+                httpWebRequest.Abort();
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
+                {
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
+                }
+                else
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = "您的账号数据有问题，请联系开发者重置",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
+                }
+            }
+            catch (Exception e)
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "StarChat程序错误",
+                    Content = e,
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                return "ERR";
+            }
+        }
+
         public async static void ConnectSSE(string protob64)
         {
             protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
@@ -589,6 +691,44 @@ namespace StarChat
                                 .AddText("StarChat")
                                 .AddText("收到新的好友请求！\n来自：" + id_to_name_res)
                                 .Show();
+                        }
+                    }
+                    else if (data.Split(">")[0] == "newfrimsg")
+                    {
+                        if(RunningDataSave.chatframe_targetid == int.Parse(data.Split(">")[1]))
+                        {
+                            string DataJson = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(data.Split(">")[2]));
+                            JsonChatHistory DataCH = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonChatHistory>(DataJson);
+                            if (DataCH.msgtype == "text")
+                            {
+                                RunningDataSave.friendchatframe_sp_chatcontent.Children.Add(new TextBlock
+                                {
+                                    Text = DataCH.msgcontent,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Margin = new Thickness(30, 20, 0, 0)
+                                });
+                            }
+                            if (DataCH.msgtype == "hyperlink")
+                            {
+                                RunningDataSave.friendchatframe_sp_chatcontent.Children.Add(new HyperlinkButton
+                                {
+                                    Content = DataCH.msgcontent,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Margin = new Thickness(18, 20, 0, 0),
+                                    NavigateUri = new Uri(DataCH.msglink)
+                                });
+                            }
+                            if (DataCH.msgtype == "image")
+                            {
+                                BitmapImage bipm = new BitmapImage();
+                                bipm.UriSource = new Uri(DataCH.msglink);
+                                RunningDataSave.friendchatframe_sp_chatcontent.Children.Add(new Microsoft.UI.Xaml.Controls.Image
+                                {
+                                    Source = bipm,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Margin = new Thickness(30, 20, 0, 0),
+                                });
+                            }
                         }
                     }
                 }

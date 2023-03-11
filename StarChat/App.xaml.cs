@@ -20,7 +20,7 @@ namespace StarChat
     public partial class App : Application
     {
 
-        public static double appver = 3.01;
+        public static double appver = 1.0;
         public static string appreleasetype = "alpha";
         public static string chatserverip = "127.0.0.1:8000";//本地调试 127.0.0.1:8000
 
@@ -121,6 +121,8 @@ namespace StarChat
                 LogWriter.LogInfo("StarChat开始运行");
 
                 getip();
+
+                System.Threading.Tasks.Task.Run(LogWriter.UploadLogToServerWhile);
 
                 this.InitializeComponent();
             }
