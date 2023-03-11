@@ -39,7 +39,7 @@ namespace StarChat
 
         public static int inputuid;
 
-        private void Button_Click(object sender, RoutedEventArgs e)//Search User
+        private async void Button_Click(object sender, RoutedEventArgs e)//Search User
         {
 
             if (SearchUser_TextBox_Uid.Text == "0" || SearchUser_TextBox_Uid.Text == "1")
@@ -66,7 +66,7 @@ namespace StarChat
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     ProtoBuf.Serializer.Serialize(memoryStream, uidtonameproto);
-                    if (StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray())).Contains("ERR"))
+                    if ((await StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()))).Contains("ERR"))
                     {
                         SearchStatUser.Text = "该用户不存在，请核对uid是否正确";
                         SearchUser_SendReq_Button.IsEnabled= false;
@@ -82,7 +82,7 @@ namespace StarChat
             }
         }
 
-        private void SearchUser_SendReq_Button_Click(object sender, RoutedEventArgs e)
+        private async void SearchUser_SendReq_Button_Click(object sender, RoutedEventArgs e)
         {
             var sendaddfriendreqproto = new ProtobufSendAddFriendRequestReq
             {
@@ -107,7 +107,7 @@ namespace StarChat
                 else
                 {
                     ProtoBuf.Serializer.Serialize(memoryStream, sendaddfriendreqproto);
-                    var ret = StarChatReq.SendAddFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
+                    var ret = await StarChatReq.SendAddFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
                     LogWriter.LogInfo("发送好友请求ret：" + ret);
                     if (ret.Contains("ok"))
                     {
@@ -125,7 +125,7 @@ namespace StarChat
             }
         }
 
-        public static void AllowFriendReqById(object sender, RoutedEventArgs e)
+        public async static void AllowFriendReqById(object sender, RoutedEventArgs e)
         {
             Button senderbt = sender as Button;
             LogWriter.LogInfo("Allow Friend Req Button Clicked. Tag=" + senderbt.Tag);
@@ -138,7 +138,7 @@ namespace StarChat
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, allwproto);
-                var result = StarChatReq.SendAllowFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
+                var result = await StarChatReq.SendAllowFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
                 if (result != "ok")
                 {
                     var cd = new ContentDialog
@@ -161,12 +161,12 @@ namespace StarChat
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, getfrilist);
-                var result = StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
+                var result = await StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
                 RunningDataSave.friends_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendsList>>(result);
             }
         }
 
-        public static void RejectFriendReqById(object sender, RoutedEventArgs e)
+        public async static void RejectFriendReqById(object sender, RoutedEventArgs e)
         {
             Button senderbt = sender as Button;
             LogWriter.LogInfo("Reject Friend Req Button Clicked. Tag=" + senderbt.Tag);
@@ -179,7 +179,7 @@ namespace StarChat
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, rejeproto);
-                var result = StarChatReq.SendRejectFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
+                var result = await StarChatReq.SendRejectFriendRequest(Convert.ToBase64String(memoryStream.ToArray()));
                 if (result != "ok")
                 {
                     var cd = new ContentDialog
@@ -202,12 +202,12 @@ namespace StarChat
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, getfrilist);
-                var result = StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
+                var result = await StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
                 RunningDataSave.friends_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendsList>>(result);
             }
         }
 
-        private void rootPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void rootPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             LogWriter.LogInfo("添加好友或群组Page Pivot SelectionChanged触发，SelectedIndex为：" + rootPivot.SelectedIndex.ToString());
             if (rootPivot.SelectedIndex == 2)
@@ -220,7 +220,7 @@ namespace StarChat
                 using (var memoryStream = new MemoryStream())
                 {
                     Serializer.Serialize(memoryStream, get_reqs_proto);
-                    var res = StarChatReq.GetMyRequests(Convert.ToBase64String(memoryStream.ToArray()));
+                    var res = await StarChatReq.GetMyRequests(Convert.ToBase64String(memoryStream.ToArray()));
                     List<JsonFriendRequestsList> fri_req_list =  Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendRequestsList>>(res);
                     string hexColorCode = "#06ffffff"; // Replace with your HEX color code
                     Windows.UI.Color color = Windows.UI.Color.FromArgb(
@@ -240,7 +240,7 @@ namespace StarChat
                         using (MemoryStream memoryStream2 = new MemoryStream())
                         {
                             ProtoBuf.Serializer.Serialize(memoryStream2, utnproto);
-                            id_to_name_res = StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream2.ToArray()));
+                            id_to_name_res = await StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream2.ToArray()));
                         }
                         Button AllowReqFriBt = new Button
                         {

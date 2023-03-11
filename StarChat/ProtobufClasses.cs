@@ -258,17 +258,40 @@ namespace StarChat
     [ProtoContract]
     class ProtobufMessageSend
     {
+        [ProtoMember(1)]
         /// <summary>
         /// base64编码的AES或RSA加密消息
         /// </summary>
         public string msg_b64 { get; set; }
+        [ProtoMember(2)]
         /// <summary>
         /// 消息类型，分别是text，img，vid，bin
         /// </summary>
         public string msg_type { get; set; }
+        [ProtoMember(3)]
         /// <summary>
         /// 用户名称
         /// </summary>
         public string username { get; set; }
+        [ProtoMember(4)]
+        /// <summary>
+        /// 目标类型，friend或group
+        /// </summary>
+        public string target_type { get; set; }
+        [ProtoMember(5)]
+        /// <summary>
+        /// 目标id，uid或gid
+        /// </summary>
+        public string targetid { get; set; }
+        [ProtoMember(6)]
+        /// <summary>
+        /// 消息发送者uid
+        /// </summary>
+        public string selfuid { get; set; }
+        [ProtoMember(7)]
+        /// <summary>
+        /// token验证
+        /// </summary>
+        public string token { get; set; }
     }
 }

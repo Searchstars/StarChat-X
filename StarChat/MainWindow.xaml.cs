@@ -136,7 +136,7 @@ namespace StarChat
                     ProtoBuf.Serializer.Serialize(memoryStream, loginproto);
                     LogWriter.LogInfo("ClientUserLoginReq 的 Protobuf序列化成功，内容：" + Convert.ToBase64String(memoryStream.ToArray()));
                     LogWriter.LogInfo("尝试将内容发送到服务器...");
-                    var result = StarChatReq.ClientUserLoginReq(Convert.ToBase64String(memoryStream.ToArray()));
+                    var result = await StarChatReq.ClientUserLoginReq(Convert.ToBase64String(memoryStream.ToArray()));
                     LogWriter.LogInfo("登录结果：" + result);
                     if (result.Contains("E-R-R-O-R-M-S-G="))
                     {
@@ -206,7 +206,7 @@ namespace StarChat
                     ProtoBuf.Serializer.Serialize(memoryStream, regproto);
                     LogWriter.LogInfo("ClientUserRegisterReq 的 Protobuf序列化成功，内容：" + Convert.ToBase64String(memoryStream.ToArray()));
                     LogWriter.LogInfo("尝试将内容发送到服务器...");
-                    var result = StarChatReq.ClientUserRegisterReq(Convert.ToBase64String(memoryStream.ToArray()));
+                    var result = await StarChatReq.ClientUserRegisterReq(Convert.ToBase64String(memoryStream.ToArray()));
                     LogWriter.LogInfo("注册结果：" + result);
                     if (result.Contains("E-R-R-O-R-M-S-G="))
                     {

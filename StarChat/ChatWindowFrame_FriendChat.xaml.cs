@@ -31,9 +31,8 @@ namespace StarChat
 
         private Windows.UI.Text.Core.CoreTextEditContext _editContext;
 
-        public ChatWindowFrame_FriendChat()
+        public async void InitChatHistory()
         {
-            this.InitializeComponent();
             var gethisproto = new ProtobufGetChatHistory
             {
                 target = "friend",
@@ -44,21 +43,18 @@ namespace StarChat
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, gethisproto);
-                LogWriter.LogInfo("GetChatHistory 的 Protobuf序列化成功，内容：" + Convert.ToBase64String(memoryStream.ToArray()));
-                LogWriter.LogInfo("尝试将内容发送到服务器...");
-                var result = StarChatReq.GetChatHistory(Convert.ToBase64String(memoryStream.ToArray()));
-                LogWriter.LogInfo("聊天记录返回：" + result);
+                var result = await StarChatReq.GetChatHistory(Convert.ToBase64String(memoryStream.ToArray()));
 
                 List<JsonChatHistory> chathis = JsonConvert.DeserializeObject<List<JsonChatHistory>>(result);
-                foreach(var item in chathis)
+                foreach (var item in chathis)
                 {
-                    if(item.msgtype == "text")
+                    if (item.msgtype == "text")
                     {
                         sp_chatcontent.Children.Add(new TextBlock
                         {
-                            Text=item.msgcontent,
+                            Text = item.msgcontent,
                             VerticalAlignment = VerticalAlignment.Center,
-                            Margin = new Thickness(30,20,0,0)
+                            Margin = new Thickness(30, 20, 0, 0)
                         });
                     }
                     if (item.msgtype == "hyperlink")
@@ -89,6 +85,38 @@ namespace StarChat
                 LogWriter.LogInfo("好吧，看来目前系统使用的是浅色模式...切换背景颜色咯！");
                 SendBtn.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 192, 192));
             }
+        }
+
+        public ChatWindowFrame_FriendChat()
+        {
+            this.InitializeComponent();
+            InitChatHistory();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)//SendFile Onclick
+        {
+            var cd = new ContentDialog
+            {
+                Title = "暂未开放",
+                Content = "在 \"StarChat X 兼容性测试\" 中，该功能暂时不可用",
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close
+            };
+            cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+            cd.ShowAsync();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)//SendEmoticons Onclick
+        {
+            var cd = new ContentDialog
+            {
+                Title = "暂未开放",
+                Content = "在 \"StarChat X 兼容性测试\" 中，该功能暂时不可用",
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close
+            };
+            cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+            cd.ShowAsync();
         }
     }
 }

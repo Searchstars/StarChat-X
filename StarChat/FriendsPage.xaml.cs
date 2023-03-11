@@ -29,9 +29,8 @@ namespace StarChat
     public sealed partial class FriendsPage : Page
     {
 
-        public FriendsPage()
+        public async void init_friend_page()
         {
-            this.InitializeComponent();
             var getfrilist = new ProtobufGetFriendsList
             {
                 uid = RunningDataSave.useruid,
@@ -40,7 +39,7 @@ namespace StarChat
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, getfrilist);
-                var result = StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
+                var result = await StarChatReq.GetFriendsListReq(Convert.ToBase64String(memoryStream.ToArray()));
                 RunningDataSave.friends_list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonFriendsList>>(result);
             }
             foreach (var item in RunningDataSave.friends_list)
@@ -55,8 +54,8 @@ namespace StarChat
                     ProtoBuf.Serializer.Serialize(memoryStream, uidtonameproto);
                     TextBlock txb = new TextBlock()
                     {
-                        Text = StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray())),
-                        Margin = new Thickness(0,0,0,0),
+                        Text = await StarChatReq.GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray())),
+                        Margin = new Thickness(0, 0, 0, 0),
                         VerticalAlignment = VerticalAlignment.Center,
                     };
                     StackPanel sp = new StackPanel()
@@ -72,12 +71,17 @@ namespace StarChat
             ChatFrame.Navigate(typeof(ChatWindowFrame_NoSelectFriend));
         }
 
+        public FriendsPage()
+        {
+            this.InitializeComponent();
+            init_friend_page();
+        }
+
         private void FriendsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (FriendsListView.SelectedItem != null)
             {
                 StackPanel selecteditem_sp =  (StackPanel)FriendsListView.SelectedItem;
-                LogWriter.LogInfo("ListView中的项被用户选择，项StackPanel的Tag为（ToString）：" + selecteditem_sp.Tag.ToString());
                 RunningDataSave.chatframe_type = "friend";
                 RunningDataSave.chatframe_targetid = int.Parse(selecteditem_sp.Tag.ToString());
                 ChatFrame.Navigate(typeof(ChatWindowFrame_FriendChat));

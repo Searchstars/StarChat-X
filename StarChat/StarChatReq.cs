@@ -22,10 +22,11 @@ namespace StarChat
 
         public static int lacheck_sse_recv_count = 0;
 
-        public static string ClientUserLoginReq(string protob64)
+        public async static Task<string> ClientUserLoginReq(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ClientUserLoginReq");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -40,9 +41,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(responseContent.Split("success>^<")[1])))
+                    using (MemoryStream ms = new MemoryStream(Convert.FromBase64String((await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1])))
                     {
                         var a = ProtoBuf.Serializer.Deserialize<ProtobufGetUserAccountInfoRes>(ms);
                         RunningDataSave.friends_list = JsonConvert.DeserializeObject<List<JsonFriendsList>>(a.friend_list);
@@ -55,7 +56,7 @@ namespace StarChat
                 }
                 else
                 {
-                    return "NO-OK-RETURN-MSG=" + responseContent;
+                    return "NO-OK-RETURN-MSG=" + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -63,10 +64,11 @@ namespace StarChat
                 return "E-R-R-O-R-M-S-G=" + e.ToString();
             }
         }
-        public static string ClientUserRegisterReq(string protob64)
+        public async static Task<string> ClientUserRegisterReq(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ClientUserRegisterReq");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -81,13 +83,13 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success"))
                 {
                     return "OK";
                 }
                 else
                 {
-                    return "NO-OK-RETURN-MSG=" + responseContent;
+                    return "NO-OK-RETURN-MSG=" + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -95,10 +97,11 @@ namespace StarChat
                 return "E-R-R-O-R-M-S-G=" + e.ToString();
             }
         }
-        public static string GetFriendNameFromId(string protob64)
+        public async static Task<string> GetFriendNameFromId(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetFriendNameFromId");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -113,9 +116,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -136,10 +139,11 @@ namespace StarChat
             }
         }
 
-        public static string GetChatHistory(string protob64)
+        public async static Task<string> GetChatHistory(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetChatHistory");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -154,9 +158,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -185,10 +189,11 @@ namespace StarChat
             }
         }
 
-        public static string SendAddFriendRequest(string protob64)
+        public async static Task<string> SendAddFriendRequest(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/AddFriendReq");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -203,10 +208,10 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     LogWriter.LogInfo("AddFriendReq_RespContent：" + responseContent);
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -218,7 +223,7 @@ namespace StarChat
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
-                    return "ERR: " + responseContent;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -235,10 +240,11 @@ namespace StarChat
             }
         }
 
-        public static string SendAllowFriendRequest(string protob64)
+        public async static Task<string> SendAllowFriendRequest(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/AllowFriendRequest");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -253,9 +259,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -267,7 +273,7 @@ namespace StarChat
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
-                    return "ERR: " + responseContent;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -284,10 +290,11 @@ namespace StarChat
             }
         }
 
-        public static string GetMyRequests(string protob64)
+        public async static Task<string> GetMyRequests(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetMyRequestsReq");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -302,9 +309,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -316,7 +323,7 @@ namespace StarChat
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
-                    return "ERR: " + responseContent;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -333,10 +340,11 @@ namespace StarChat
             }
         }
 
-        public static string SendRejectFriendRequest(string protob64)
+        public async static Task<string> SendRejectFriendRequest(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/RejectFriendRequest");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -351,9 +359,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -365,7 +373,7 @@ namespace StarChat
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
-                    return "ERR: " + responseContent;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -382,10 +390,11 @@ namespace StarChat
             }
         }
 
-        public static string GetFriendsListReq(string protob64)
+        public async static Task<string> GetFriendsListReq(string protob64)
         {
             try
             {
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
                 HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetFriendsList");
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -400,9 +409,9 @@ namespace StarChat
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
-                if (responseContent.Contains("success>^<"))
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
-                    return responseContent.Split("success>^<")[1];
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
                 }
                 else
                 {
@@ -414,7 +423,7 @@ namespace StarChat
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
-                    return "ERR: " + responseContent;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -431,8 +440,9 @@ namespace StarChat
             }
         }
 
-        public static void ConnectSSE(string protob64)
+        public async static void ConnectSSE(string protob64)
         {
+            protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
             HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ListenMsg");
             //字符串转换为字节码
             byte[] bs = Encoding.UTF8.GetBytes(protob64);
@@ -530,7 +540,7 @@ namespace StarChat
                             using (MemoryStream memoryStream = new MemoryStream())
                             {
                                 ProtoBuf.Serializer.Serialize(memoryStream, utnproto);
-                                id_to_name_res = GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
+                                id_to_name_res = await GetFriendNameFromId(Convert.ToBase64String(memoryStream.ToArray()));
                             }
                             Button AllowReqFriBt = new Button
                             {

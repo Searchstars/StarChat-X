@@ -267,7 +267,7 @@ namespace StarChatServer
             using (var body = req.InputStream)
             using (var reader = new StreamReader(body, req.ContentEncoding))
             {
-                return Convert.FromBase64String(await reader.ReadToEndAsync());
+                return Convert.FromBase64String(AesEncryption.dec_aes_normal(await reader.ReadToEndAsync()));
             }
         }
 
@@ -281,6 +281,7 @@ namespace StarChatServer
 
         private static void SetResponseContent(HttpListenerResponse resp, string content)
         {
+            content = AesEncryption.enc_aes_normal(content);
             var dataBytes = Encoding.UTF8.GetBytes(content);
             resp.ContentType = "text/html";
             resp.ContentEncoding = Encoding.UTF8;
@@ -416,7 +417,7 @@ namespace StarChatServer
             using (var body = req.InputStream)
             using (var reader = new StreamReader(body, req.ContentEncoding))
             {
-                return await reader.ReadToEndAsync();
+                return AesEncryption.dec_aes_normal(await reader.ReadToEndAsync());
             }
         }
 
@@ -453,8 +454,8 @@ namespace StarChatServer
             using (var body = req.InputStream)
             using (var reader = new StreamReader(body, req.ContentEncoding))
             {
-                var data_poststr = await reader.ReadToEndAsync();
-                var requestData = Convert.FromBase64String(data_poststr);
+                Console.WriteLine("login");
+                var requestData = await ReadRequestData(req);
                 var request = Serializer.Deserialize<ProtobufLogin>(new MemoryStream(requestData));
                 Console.WriteLine($"ClientUserLoginReq  Username: {request.username} Password: {request.password}");
 
