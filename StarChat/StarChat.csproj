@@ -59,6 +59,9 @@
     <None Update="memes_warning_list.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Obfuscar.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="obscene_text_block_list.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

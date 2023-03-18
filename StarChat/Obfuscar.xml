@@ -23,7 +23,7 @@
 	<Var name="HidePrivateApi" value="true" />
 	<!-- 设置 HideStrings 为 true 可以设置是否将使用的字符串进行二次编码 -->
 	<!-- 由于进行二次编码，将会稍微伤一点点性能，二次编码需要在运行的时候，调用 Encoding 进行转换为字符串 -->
-	<Var name="HideStrings" value="false" />
+	<Var name="HideStrings" value="true" />
 	<!-- 设置 UseUnicodeNames 为 true 表示使用不可见的 Unicode 字符代替原有的命名，通过此配置，可以让反编译看到的类和命名空间和成员等内容都是不可见的字符 -->
 	<Var name="UseUnicodeNames" value="true" />
 	<!-- 是否复用命名，设置为 true 的时候，将会复用命名，如在不同的类型里面，对字段进行混淆，那么不同的类型的字段可以是重名的 -->
