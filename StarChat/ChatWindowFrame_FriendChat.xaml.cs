@@ -41,6 +41,10 @@ namespace StarChat
 
         public static bool all_chathistory_place_ok = false;
 
+        public static double lat_scrollviewer_height = 0;
+
+        public static int nowtargetid = RunningDataSave.chatframe_targetid;
+
         public async void InitChatHistory()
         {
             var gethisproto = new ProtobufGetChatHistory
@@ -102,10 +106,22 @@ namespace StarChat
         {
             while (true)
             {
-                await Task.Delay(500);
-                LogWriter.LogInfo("changeview");
-                scrollviewer_chatcontent.ChangeView(null, scrollviewer_chatcontent.ExtentHeight, null, false);
-                break;
+                await Task.Delay(200);
+                if (lat_scrollviewer_height != scrollviewer_chatcontent.ExtentHeight && scrollviewer_chatcontent.ExtentHeight > 520)
+                {
+                    Console.WriteLine("scr_output: " + lat_scrollviewer_height + " != " + scrollviewer_chatcontent.ExtentHeight);
+                    while (lat_scrollviewer_height != scrollviewer_chatcontent.ExtentHeight)
+                    {
+                        scrollviewer_chatcontent.ChangeView(null, scrollviewer_chatcontent.ExtentHeight, null, false);
+                        lat_scrollviewer_height = scrollviewer_chatcontent.ExtentHeight;
+                    }
+                    Console.WriteLine("finish");
+                }
+                if(nowtargetid != RunningDataSave.chatframe_targetid)
+                {
+                    Console.WriteLine("scr_break_reason: " + nowtargetid + "!=" + RunningDataSave.chatframe_targetid);
+                    break;
+                }
             }
         }
 
@@ -114,6 +130,8 @@ namespace StarChat
             RunningDataSave.scrollviewer_chatcontent = this.scrollviewer_chatcontent;
             this.InitializeComponent();
             RunningDataSave.friendchatframe_sp_chatcontent = this.sp_chatcontent;
+            lat_scrollviewer_height = scrollviewer_chatcontent.ExtentHeight;
+            nowtargetid = RunningDataSave.chatframe_targetid;
             InitChatHistory();
             scroll_to_under();
         }

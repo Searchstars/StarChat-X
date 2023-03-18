@@ -598,7 +598,7 @@ namespace StarChat
                 {
                     sse_recv_count++;
                     var data = line.Substring("data: ".Length);
-                    if (data.Contains("checklive"))
+                    if (data.Contains("checklive") || data.Contains("newfrimsg"))
                     {
                         Console.WriteLine(data);
                     }
