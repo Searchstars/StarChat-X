@@ -69,6 +69,7 @@ namespace StarChat
             IntPtr hImc = Win32Api.ImmGetContext(hwnd);
             Win32Api.ShowReadingWindow(hImc, true);
             RunningDataSave.chatwindow_static = this;
+            RunningDataSave.chatwindow_bar_skp = this.bar_skp;
 
             var sseproto = new ProtobufSSEConnectReq
             {

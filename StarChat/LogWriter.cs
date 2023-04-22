@@ -65,34 +65,25 @@ namespace StarChat
         }
         public async static void LogInfo(string content)
         {
-            Console.Write("[INFO]",Color.LightBlue);
+            Console.Write("[INFO]", Color.LightBlue);
             Console.Write(" [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] ");
             Console.WriteLine(content);
-            var data = await Tools.AesEncryption.enc_aes_log(System.IO.File.ReadAllText(now_log_file_name) + "[INFO] [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] " + content + "\n");
-            using (StreamWriter writer = new StreamWriter(now_log_file_name))
+            var data = await Tools.AesEncryption.enc_aes_log("[INFO] [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] " + content + "\n");
+            using (StreamWriter writer = File.AppendText(now_log_file_name))
             {
-                // Write data to file in chunks
-                for (int i = 0; i < data.Length; i += 20)
-                {
-                    int length = Math.Min(20, data.Length - i);
-                    writer.Write(data.Substring(i, length));
-                }
+                writer.Write(data);
             }
         }
+
         public async static void LogWarn(string content)
         {
             Console.Write("[WARN]", Color.LightYellow);
             Console.Write(" [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] ");
             Console.WriteLine(content);
             var data = await Tools.AesEncryption.enc_aes_log(System.IO.File.ReadAllText(now_log_file_name) + "[WARN] [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] " + content + "\n");
-            using (StreamWriter writer = new StreamWriter(now_log_file_name))
+            using (StreamWriter writer = File.AppendText(now_log_file_name))
             {
-                // Write data to file in chunks
-                for (int i = 0; i < data.Length; i += 20)
-                {
-                    int length = Math.Min(20, data.Length - i);
-                    writer.Write(data.Substring(i, length));
-                }
+                writer.Write(data);
             }
         }
         public async static void LogError(string content)
@@ -101,14 +92,9 @@ namespace StarChat
             Console.Write(" [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] ");
             Console.WriteLine(content);
             var data = await Tools.AesEncryption.enc_aes_log(System.IO.File.ReadAllText(now_log_file_name) + "[ERROR] [" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + "] " + content + "\n");
-            using (StreamWriter writer = new StreamWriter(now_log_file_name))
+            using (StreamWriter writer = File.AppendText(now_log_file_name))
             {
-                // Write data to file in chunks
-                for (int i = 0; i < data.Length; i += 20)
-                {
-                    int length = Math.Min(20, data.Length - i);
-                    writer.Write(data.Substring(i, length));
-                }
+                writer.Write(data);
             }
         }
         public async static void EndLog()

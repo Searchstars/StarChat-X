@@ -14,12 +14,31 @@
     <Border CornerRadius="10">
         <Grid Background="	#06ffffff">
             <TextBox VerticalAlignment="Center" Width="600" Margin="-210,520,0,0" x:Name="ChatSendContentBox" IsTextPredictionEnabled="True" IsSpellCheckEnabled="True"></TextBox>
-            <Button Content="发送" VerticalAlignment="Center" Margin="660,522.5,0,0" Background="Green" x:Name="SendBtn" Click="SendBtn_Click"></Button>
-            <Button VerticalAlignment="Center" Margin="730,522.5,0,0" Click="Button_Click">
+            <Button Content="发送" VerticalAlignment="Center" Margin="650,522.5,0,0" Background="Green" x:Name="SendBtn" Click="SendBtn_Click"></Button>
+            <DropDownButton VerticalAlignment="Center" Margin="713,522.5,0,0">
                 <StackPanel>
                     <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8b7;"></FontIcon>
                 </StackPanel>
-            </Button>
+                <DropDownButton.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuFlyoutItem Text="文件">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8e5;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="图片" Click="MenuFlyoutItem_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8b9;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="剪切板图片">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8c8;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
             <Button VerticalAlignment="Center" Margin="790,522.5,0,0" Click="Button_Click_1">
                 <StackPanel>
                     <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe899;"></FontIcon>

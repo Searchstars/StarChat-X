@@ -24,12 +24,17 @@ namespace StarChat
 
         public static int lacheck_sse_recv_count = 0;
 
-        public async static Task<string> ClientUserLoginReq(string protob64)
+        public static bool reconnect = false;
+
+        public static int reconnect_count = 0;
+
+        public async static Task<string> SendHttpRequest(string url, string protob64)
         {
             try
             {
                 protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ClientUserLoginReq");
+                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + url);
+                Console.WriteLine(http_or_https + App.chatserverip + url);
                 //字符串转换为字节码
                 byte[] bs = Encoding.UTF8.GetBytes(protob64);
                 httpWebRequest.ContentType = "application/text";
@@ -37,12 +42,28 @@ namespace StarChat
                 httpWebRequest.Method = "POST";
                 httpWebRequest.Timeout = 20000;
                 httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
+                Console.WriteLine("send!");
                 HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                 StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
                 string responseContent = streamReader.ReadToEnd();
+                Console.WriteLine(responseContent);
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
+                return responseContent;
+            }
+            catch (Exception e)
+            {
+                return "E-R-R-O-R-M-S-G=" + e.ToString();
+            }
+        }
+
+        public async static Task<string> ClientUserLoginReq(string protob64)
+        {
+            try
+            {
+                string responseContent = await SendHttpRequest("/ClientUserLoginReq", protob64);
+                Console.WriteLine(responseContent);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     using (MemoryStream ms = new MemoryStream(Convert.FromBase64String((await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1])))
@@ -58,7 +79,7 @@ namespace StarChat
                 }
                 else
                 {
-                    return "NO-OK-RETURN-MSG=" + Tools.AesEncryption.dec_aes_normal(responseContent);
+                    return "NO-OK-RETURN-MSG=" + await Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -70,28 +91,14 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ClientUserRegisterReq");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/ClientUserRegisterReq", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success"))
                 {
                     return "OK";
                 }
                 else
                 {
-                    return "NO-OK-RETURN-MSG=" + Tools.AesEncryption.dec_aes_normal(responseContent);
+                    return "NO-OK-RETURN-MSG=" + await Tools.AesEncryption.dec_aes_normal(responseContent);
                 }
             }
             catch (Exception e)
@@ -103,21 +110,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetFriendNameFromId");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/GetFriendNameFromId", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -145,21 +138,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetChatHistory");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/GetChatHistory", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -195,21 +174,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/AddFriendReq");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/AddFriendReq", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     LogWriter.LogInfo("AddFriendReq_RespContent：" + responseContent);
@@ -246,21 +211,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/AllowFriendRequest");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/AllowFriendRequest", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -296,21 +247,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetMyRequestsReq");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/GetMyRequestsReq", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -346,21 +283,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/RejectFriendRequest");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/RejectFriendRequest", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -396,21 +319,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/GetFriendsList");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/GetFriendsList", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -446,21 +355,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/SendMessageReq");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/SendMessageReq", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -496,21 +391,7 @@ namespace StarChat
         {
             try
             {
-                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
-                HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/clientlog_starchat_winui3_desktop");
-                //字符串转换为字节码
-                byte[] bs = Encoding.UTF8.GetBytes(protob64);
-                httpWebRequest.ContentType = "application/text";
-                httpWebRequest.ContentLength = bs.Length;
-                httpWebRequest.Method = "POST";
-                httpWebRequest.Timeout = 20000;
-                httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
-                string responseContent = streamReader.ReadToEnd();
-                streamReader.Close();
-                httpWebResponse.Close();
-                httpWebRequest.Abort();
+                string responseContent = await SendHttpRequest("/clientlog_starchat_winui3_desktop", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -560,26 +441,65 @@ namespace StarChat
             CheckSSEConnectionStat();
         }
 
+        public async static void ReConnectSSE(string protob64)
+        {
+            protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
+            HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(http_or_https + App.chatserverip + "/ListenMsg");
+            //字符串转换为字节码
+            byte[] bs = Encoding.UTF8.GetBytes(protob64);
+            httpWebRequest.ContentType = "application/text";
+            httpWebRequest.ContentLength = bs.Length;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Timeout = 20000;
+            httpWebRequest.Accept = "text/event-stream";
+            httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
+            HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
+            SSEMsgRecv(streamReader);
+        }
+
         static async Task CheckSSEConnectionStat()
         {
             while (true)
             {
-                await Task.Delay(8000);
+                await Task.Delay(5000);//根据服务器tick做调整
+                Console.WriteLine("sse_recv_count: " + sse_recv_count);
                 if(lacheck_sse_recv_count == sse_recv_count)
                 {
-                    LogWriter.LogWarn("SSE超时，给予用户警告弹窗");
-                    var cd = new ContentDialog
+                    if (reconnect)
                     {
-                        Title = "网络连接出现问题",
-                        Content = "你可能注意到群聊或好友的消息突然停下来了，这是客户端过久没收到来自服务器的消息导致的。若此弹窗在短期内反复出现，可能是你的网络已断开，若此弹窗会不定时的间隔超过10秒出现或只是偶尔出现几次，则可能是你的网络连接速率过于缓慢",
-                        CloseButtonText = "OK",
-                        DefaultButton = ContentDialogButton.Close
-                    };
-                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
-                    await cd.ShowAsync();
+                        reconnect_count++;
+                        InfoBarControl.errbar(RunningDataSave.chatwindow_bar_skp, true, "重连失败", "无法连接到服务器，继续尝试重连...");
+                        if(reconnect_count > 2)//大于2鉴定为没救，Remake一下
+                        {
+                            var sseproto = new ProtobufSSEConnectReq
+                            {
+                                uid = RunningDataSave.useruid,
+                                token = RunningDataSave.token,
+                            };
+                            using (MemoryStream memoryStream = new MemoryStream())
+                            {
+                                ProtoBuf.Serializer.Serialize(memoryStream, sseproto);
+                                StarChatReq.ReConnectSSE(Convert.ToBase64String(memoryStream.ToArray()));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LogWriter.LogWarn("SSE超时，给予用户警告弹窗");
+                        InfoBarControl.errbar(RunningDataSave.chatwindow_bar_skp, true, "连接问题", "未能收到来自服务端的消息，可能是网络连接已断开，或速率过于缓慢，尝试重连...");
+                        reconnect = true;
+                    }
                 }
                 else
                 {
+                    if (reconnect)
+                    {
+                        InfoBarControl.sucbar(RunningDataSave.chatwindow_bar_skp, true, "重连成功", "成功重新连接到服务器，Enjoy it！");
+                        reconnect = false;
+                        reconnect_count = 0;
+                        lacheck_sse_recv_count = sse_recv_count;
+                    }
                     lacheck_sse_recv_count = sse_recv_count;
                 }
             }

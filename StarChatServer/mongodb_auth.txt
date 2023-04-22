@@ -1,0 +1,2 @@
+frimanager fripwd
+csharpserveradmin cservpwd

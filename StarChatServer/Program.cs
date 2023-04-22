@@ -21,7 +21,8 @@ namespace StarChatServer
     {
         public static HttpListener listener;
         public static string url = "http://*:8000/";//监听所有IP 一般不用改
-        public static string dburl = "mongodb://localhost:27017/";//数据库url，按照搭建环境进行调整
+        public static string dburl = "mongodb://127.0.0.1:27017";//本地调试27017
+        //public static string dburl = "mongodb://csharpserveradmin:cservpwd@43.152.199.64:27017/?authMechanism=DEFAULT";//数据库url，按照搭建环境进行调整
         public static MongoClient client = new MongoClient(dburl);
         public static IMongoCollection<BsonDocument> dbcollection_test = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("test");
         public static IMongoCollection<BsonDocument> dbcollection_account = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("accounts");

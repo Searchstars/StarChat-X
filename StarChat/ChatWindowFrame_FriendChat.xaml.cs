@@ -19,6 +19,8 @@ using System.Drawing;
 using Microsoft.Win32;
 using Windows.Foundation;
 using System.Threading.Tasks;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -228,6 +230,20 @@ namespace StarChat
                 }
                 MsgSender.SendTextToFriend(ChatSendContentBox.Text,RunningDataSave.chatframe_targetid);
             }
+        }
+
+        private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)//图片发送
+        {
+            var filePicker = new FileOpenPicker();
+            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(RunningDataSave.chatwindow_static));
+            filePicker.FileTypeFilter.Add(".jpg");
+            filePicker.FileTypeFilter.Add(".png");
+            filePicker.FileTypeFilter.Add(".gif");
+            filePicker.FileTypeFilter.Add(".svg");
+            filePicker.FileTypeFilter.Add(".jpeg");
+            filePicker.FileTypeFilter.Add(".webp");
+            var file = await filePicker.PickSingleFileAsync();
+            LogWriter.LogInfo("用户正在尝试发送图片，选取的图片路径：" + file.Path);
         }
     }
 }

@@ -25,7 +25,7 @@
             <PivotItem Header="搜索群组">
                 <!--Pivot content goes here-->
                 <Grid>
-                    <TextBox Width="300" Height="10" PlaceholderText="输入群组GID" Margin="-190,-350,0,0" IsEnabled="False"></TextBox>
+                    <TextBox Width="300" Height="10" PlaceholderText="输入群组邀请码" Margin="-190,-350,0,0"></TextBox>
                     <Button Margin="660,-344,0,0" Content="搜索" Height="35" IsEnabled="False"></Button>
                 </Grid>
             </PivotItem>

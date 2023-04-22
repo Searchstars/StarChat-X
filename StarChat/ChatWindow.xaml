@@ -58,5 +58,6 @@
                 <Frame x:Name="contentFrame" IsTabStop="True"/>
             </ScrollViewer>
         </NavigationView>
+        <StackPanel x:Name="bar_skp" Width="800" Margin="0,36,0,0"></StackPanel>
     </Grid>
 </Window>

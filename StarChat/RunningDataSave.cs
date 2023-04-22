@@ -40,5 +40,7 @@ namespace StarChat
         public static StackPanel friendchatframe_sp_chatcontent = null;
 
         public static ScrollViewer scrollviewer_chatcontent = null;
+
+        public static StackPanel chatwindow_bar_skp = null;
     }
 }
