@@ -12,6 +12,9 @@ using static System.Resources.ResXFileRef;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml;
+using System.Net.Http;
+using System.Net.Http.Handlers;
+
 
 namespace StarChat
 {
@@ -42,11 +45,9 @@ namespace StarChat
                 httpWebRequest.Method = "POST";
                 httpWebRequest.Timeout = 20000;
                 httpWebRequest.GetRequestStream().Write(bs, 0, bs.Length);
-                Console.WriteLine("send!");
                 HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
                 StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
                 string responseContent = streamReader.ReadToEnd();
-                Console.WriteLine(responseContent);
                 streamReader.Close();
                 httpWebResponse.Close();
                 httpWebRequest.Abort();
@@ -56,6 +57,60 @@ namespace StarChat
             {
                 return "E-R-R-O-R-M-S-G=" + e.ToString();
             }
+        }
+
+        public async static Task<string> SendHttpRequestWithProgress(string url, string protob64)
+        {
+            try
+            {
+                // 对base64字符串进行加密
+                protob64 = await Tools.AesEncryption.enc_aes_normal(protob64);
+
+                // 创建一个ProgressMessageHandler来报告进度
+                var progressHandler = new ProgressMessageHandler();
+                long lastBytesTransferred = 0;
+                DateTime lastReportTime = DateTime.Now;
+                progressHandler.HttpSendProgress += (sender, e) =>
+                {
+                    // 计算进度百分比
+                    double progressPercentage = (double)((double)e.BytesTransferred / e.TotalBytes * 100);
+
+                    // 计算上传速度
+                    long bytesTransferredSinceLastReport = e.BytesTransferred - lastBytesTransferred;
+                    TimeSpan timeSinceLastReport = DateTime.Now - lastReportTime;
+                    double uploadSpeed = bytesTransferredSinceLastReport / timeSinceLastReport.TotalSeconds;
+
+                    // 更新上一次报告的时间和字节数
+                    lastBytesTransferred = e.BytesTransferred;
+                    lastReportTime = DateTime.Now;
+
+                    // 调用一个函数来更新UI，显示进度百分比和上传速度
+                    UpdateProgress(progressPercentage, uploadSpeed);
+                };
+
+                // 使用ProgressMessageHandler创建一个HttpClient
+                var client = HttpClientFactory.Create(progressHandler);
+
+                // 创建请求内容
+                var content = new StringContent(protob64, Encoding.UTF8, "application/text");
+
+                // 发送请求并获取响应
+                var response = await client.PostAsync(http_or_https + App.chatserverip + url, content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                return responseContent;
+            }
+            catch (Exception e)
+            {
+                return "E-R-R-O-R-M-S-G=" + e.ToString();
+            }
+        }
+
+        // 这个函数可以用来更新UI，显示进度百分比和上传速度
+        private static void UpdateProgress(double progressPercentage, double uploadSpeed)
+        {
+            RunningDataSave.FileUploadWindow_UploadPGBR.Value = progressPercentage;
+            RunningDataSave.FileUploadWindow_UploadSpeedTxb.Text = "当前上传速度：" + uploadSpeed.ToString();
         }
 
         public async static Task<string> ClientUserLoginReq(string protob64)
@@ -351,11 +406,19 @@ namespace StarChat
             }
         }
 
-        public async static Task<string> SendMessageReq(string protob64)
+        public async static Task<string> SendMessageReq(string protob64, bool WithProgress, ProgressBar pgbr, TextBlock filename, TextBlock upspeed)
         {
             try
             {
-                string responseContent = await SendHttpRequest("/SendMessageReq", protob64);
+                string responseContent = "";
+                if (!WithProgress)
+                {
+                    responseContent = await SendHttpRequest("/SendMessageReq", protob64);
+                }
+                else
+                {
+                    responseContent = await SendHttpRequestWithProgress("/SendMessageReq", protob64);
+                }
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -366,7 +429,7 @@ namespace StarChat
                     {
                         Title = "Error",
                         Content = "您的账号数据有问题，请联系开发者重置",
-                        CloseButtonText = "OK",
+                        CloseButtonText = "OK", 
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
@@ -463,7 +526,6 @@ namespace StarChat
             while (true)
             {
                 await Task.Delay(5000);//根据服务器tick做调整
-                Console.WriteLine("sse_recv_count: " + sse_recv_count);
                 if(lacheck_sse_recv_count == sse_recv_count)
                 {
                     if (reconnect)

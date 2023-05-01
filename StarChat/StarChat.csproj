@@ -17,6 +17,8 @@
     <None Remove="ChatWindow.xaml" />
     <None Remove="ChatWindowFrame_FriendChat.xaml" />
     <None Remove="ChatWindowFrame_NoSelectFriend.xaml" />
+    <None Remove="DebugOptionsWindow.xaml" />
+    <None Remove="FileUploadProgressBAR.xaml" />
     <None Remove="FriendsPage.xaml" />
     <None Remove="GroupsPage.xaml" />
     <None Remove="Segoe Fluent Icons.ttf" />
@@ -25,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Colorful.Console" Version="1.2.15" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0-preview1" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
     <PackageReference Include="Microsoft.UI.Xaml" Version="2.8.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
@@ -56,6 +59,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="DebugOptionsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="FileUploadProgressBAR.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="memes_warning_list.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

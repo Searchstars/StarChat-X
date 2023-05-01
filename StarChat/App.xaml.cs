@@ -22,7 +22,7 @@ namespace StarChat
 
         public static double appver = 1.0;
         public static string appreleasetype = "alpha";
-        public static string chatserverip = "chatserver.stargazing.studio:8000";//本地调试 127.0.0.1:8000
+        public static string chatserverip = "127.0.0.1:8000";//本地调试 127.0.0.1:8000
 
         public async static void getip()
         {

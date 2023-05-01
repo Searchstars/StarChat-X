@@ -42,5 +42,13 @@ namespace StarChat
         public static ScrollViewer scrollviewer_chatcontent = null;
 
         public static StackPanel chatwindow_bar_skp = null;
+
+        public static bool upload_window_open = false;
+
+        public static TextBlock FileUploadWindow_FileNameTxb = null;
+
+        public static TextBlock FileUploadWindow_UploadSpeedTxb = null;
+
+        public static ProgressBar FileUploadWindow_UploadPGBR = null;
     }
 }

@@ -14,6 +14,7 @@ using ProtoBuf;
 using SharpCompress.Writers;
 using System.Text.Unicode;
 using System.Security.Cryptography;
+using System.Reflection.Metadata;
 
 namespace StarChatServer
 {
@@ -21,6 +22,7 @@ namespace StarChatServer
     {
         public static HttpListener listener;
         public static string url = "http://*:8000/";//监听所有IP 一般不用改
+        public static string clientcontent_url = "http://127.0.0.1:8000/";//客户端在获取在线内容（如图片 文件等）的url前缀，一般用于硬写jsonchathistory，也方便迁移
         public static string dburl = "mongodb://127.0.0.1:27017";//本地调试27017
         //public static string dburl = "mongodb://csharpserveradmin:cservpwd@43.152.199.64:27017/?authMechanism=DEFAULT";//数据库url，按照搭建环境进行调整
         public static MongoClient client = new MongoClient(dburl);
@@ -143,6 +145,10 @@ namespace StarChatServer
                     await resp.OutputStream.WriteAsync(data, 0, data.Length);
                     resp.Close();
                 }
+                else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath.Contains("/GetFileShare")))
+                {
+                    FileShareSerivce(req, resp);
+                }
                 else if ((req.HttpMethod == "POST") && (req.Url.AbsolutePath == "/ClientUserLoginReq"))
                 {
                     LoginPostReqAsync(req, resp);
@@ -204,6 +210,24 @@ namespace StarChatServer
                     await resp.OutputStream.WriteAsync(data, 0, data.Length);
                     resp.Close();
                 }
+            }
+        }
+
+        static async Task FileShareSerivce(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            try
+            {
+                var get_filename = req.Url.AbsolutePath.Split('/')[2];
+                var dataBytes = File.ReadAllBytes("fspath/" + get_filename);
+                resp.ContentType = "application/octet-stream";
+                resp.ContentEncoding = Encoding.UTF8;
+                resp.ContentLength64 = dataBytes.LongLength;
+                resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
+                resp.Close();
+            }
+            catch
+            {
+                SetResponseContent(resp, "别扫了，再扫解析gov.cn");
             }
         }
 
@@ -281,36 +305,69 @@ namespace StarChatServer
                         msgcontent = request.userchatname + ": " + request.msg_b64
                     });
                     update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", chathis_list.ToJson());
-                }
-                dbcollection_account.UpdateOne(filter_对方, update);
-                dbcollection_account.UpdateOne(filter_自己, update);
-
-                if (sse_dict.ContainsKey(request.targetid))
-                {
-                    var writer = new StreamWriter(sse_dict[request.targetid].Response.OutputStream);
-                    var message = $"data: {"newfrimsg>" + request.selfuid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new JsonChatHistory
+                    dbcollection_account.UpdateOne(filter_对方, update);
+                    dbcollection_account.UpdateOne(filter_自己, update);
+                    if (sse_dict.ContainsKey(request.targetid))
                     {
-                        msg_send_time = "dont_view",
-                        msgtype = "text",
-                        msglink = "dont_need",
-                        msgcontent = request.userchatname + ": " + request.msg_b64
-                    }.ToJson())))}\n\n";
-                    await writer.WriteAsync(message);
-                    await writer.FlushAsync();
-                }
+                        var writer = new StreamWriter(sse_dict[request.targetid].Response.OutputStream);
+                        var message = $"data: {"newfrimsg>" + request.selfuid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new JsonChatHistory
+                        {
+                            msg_send_time = "dont_view",
+                            msgtype = "text",
+                            msglink = "dont_need",
+                            msgcontent = request.userchatname + ": " + request.msg_b64
+                        }.ToJson())))}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }
 
-                if (sse_dict.ContainsKey(request.selfuid))
-                {
-                    var writer = new StreamWriter(sse_dict[request.selfuid].Response.OutputStream);
-                    var message = $"data: {"newfrimsg>" + request.targetid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new JsonChatHistory
+                    if (sse_dict.ContainsKey(request.selfuid))
                     {
+                        var writer = new StreamWriter(sse_dict[request.selfuid].Response.OutputStream);
+                        var message = $"data: {"newfrimsg>" + request.targetid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new JsonChatHistory
+                        {
+                            msg_send_time = "dont_view",
+                            msgtype = "text",
+                            msglink = "dont_need",
+                            msgcontent = request.userchatname + ": " + request.msg_b64
+                        }.ToJson())))}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }
+                }
+                else if (request.msg_type == "bin")
+                {
+                    var filesavename = "GetFileShare/" + GetRandomString(40, true, true, true, true, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+                    //将base64字符串转换为字节数组
+                    byte[] bytes = Convert.FromBase64String(request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[1]);
+                    //将字节数组写入文件
+                    File.WriteAllBytes(filesavename, bytes);
+                    JsonChatHistory new_jchis = new JsonChatHistory{
                         msg_send_time = "dont_view",
-                        msgtype = "text",
-                        msglink = "dont_need",
-                        msgcontent = request.userchatname + ": " + request.msg_b64
-                    }.ToJson())))}\n\n";
-                    await writer.WriteAsync(message);
-                    await writer.FlushAsync();
+                        msgtype = "hyperlink",
+                        msglink = clientcontent_url + filesavename,
+                        msgcontent = "来自 " + request.userchatname + " 的文件: " + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[0]//Split字符串方法by newbing
+                    };
+                    chathis_list.Add(new_jchis);
+                    update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", chathis_list.ToJson());
+                    dbcollection_account.UpdateOne(filter_对方, update);
+                    dbcollection_account.UpdateOne(filter_自己, update);
+                    if (sse_dict.ContainsKey(request.targetid))
+                    {
+                        var writer = new StreamWriter(sse_dict[request.targetid].Response.OutputStream);
+                        var message = $"data: {"newfrimsg>" + request.selfuid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new_jchis.ToJson())))}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }
+
+                    if (sse_dict.ContainsKey(request.selfuid))
+                    {
+                        var writer = new StreamWriter(sse_dict[request.selfuid].Response.OutputStream);
+                        var message = $"data: {"newfrimsg>" + request.targetid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(new_jchis.ToJson())))}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }
                 }
 
                 SetResponseContent(resp,"success>^<ok");

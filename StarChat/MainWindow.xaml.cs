@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
 using Microsoft.Toolkit.Uwp.Notifications;
+using ABI.Windows.UI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -73,7 +74,6 @@ namespace StarChat
             AppTitleTextBlock.Text = "StarChat - Connect the world";
 #if DEBUG
             AppTitleTextBlock.Text = "StarChat - Connect the world"+ "   [Development Build]";
-#endif
 
             try
             {
@@ -90,6 +90,24 @@ namespace StarChat
                     .AddText("出现报错，请截图上报给开发者：\n" + ex.ToString())
                     .Show();
             }
+
+            var dbg_bt = new Button
+            {
+                Content = "Debug Options",
+                FontSize = 12,
+                Margin = new Thickness(8,300,0,0)
+            };
+            dbg_bt.Click += OpenDBGOptions;
+            RootGrid.Children.Add(dbg_bt);
+#endif
+
+        }
+
+        private async void OpenDBGOptions(object sender, RoutedEventArgs e)
+        {
+            LogWriter.LogInfo("debug菜单打开");
+            DebugOptionsWindow dbgwindow = new DebugOptionsWindow();
+            dbgwindow.Activate();
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)//Login Click
