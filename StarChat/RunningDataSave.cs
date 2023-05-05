@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Controls;
 using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
@@ -50,5 +52,9 @@ namespace StarChat
         public static TextBlock FileUploadWindow_UploadSpeedTxb = null;
 
         public static ProgressBar FileUploadWindow_UploadPGBR = null;
+
+        public static DispatcherQueue UIdispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+        public static AppWindow FileUploadWindow_appWindow = null;
     }
 }

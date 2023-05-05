@@ -36,7 +36,6 @@ namespace StarChat
         private void window_close(AppWindow a, AppWindowClosingEventArgs e)
         {
             RunningDataSave.upload_window_open = false;
-            this.Close();
         }
 
         public FileUploadProgressBAR(string filename_text)
@@ -53,12 +52,12 @@ namespace StarChat
             rect.Height = 210;
             appWindow.Resize(rect);
             SetTitleBar(AppTitleBar);
-
             this.UploadFileName.Text = filename_text;
             RunningDataSave.upload_window_open = true;
             RunningDataSave.FileUploadWindow_FileNameTxb = this.UploadFileName;
             RunningDataSave.FileUploadWindow_UploadSpeedTxb = this.UploadFileSpeed;
             RunningDataSave.FileUploadWindow_UploadPGBR = this.UploadFilePgbr;
+            RunningDataSave.FileUploadWindow_appWindow = appWindow;
         }
     }
 }

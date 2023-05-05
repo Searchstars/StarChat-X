@@ -84,6 +84,8 @@ namespace StarChat
                     lastBytesTransferred = e.BytesTransferred;
                     lastReportTime = DateTime.Now;
 
+                    LogWriter.LogInfo("SendHttpRequestWithProgress > " + progressPercentage + "% speed=" + uploadSpeed);
+
                     // 调用一个函数来更新UI，显示进度百分比和上传速度
                     UpdateProgress(progressPercentage, uploadSpeed);
                 };
@@ -109,8 +111,11 @@ namespace StarChat
         // 这个函数可以用来更新UI，显示进度百分比和上传速度
         private static void UpdateProgress(double progressPercentage, double uploadSpeed)
         {
-            RunningDataSave.FileUploadWindow_UploadPGBR.Value = progressPercentage;
-            RunningDataSave.FileUploadWindow_UploadSpeedTxb.Text = "当前上传速度：" + uploadSpeed.ToString();
+            RunningDataSave.UIdispatcherQueue.TryEnqueue(() => {
+                RunningDataSave.FileUploadWindow_UploadPGBR.Value = progressPercentage;
+                RunningDataSave.FileUploadWindow_UploadSpeedTxb.Text = "当前上传速度：" + uploadSpeed.ToString();
+            });
+
         }
 
         public async static Task<string> ClientUserLoginReq(string protob64)

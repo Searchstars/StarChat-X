@@ -30,7 +30,7 @@
             <TextBlock x:Name="UploadFileName" Text="正在上传：数据异常，差不多是寄了" Margin="30,60"></TextBlock>
             <TextBlock x:Name="UploadFileSpeed" Text="当前上传速度：数据异常，差不多是寄了" Margin="30,90"></TextBlock>
             <StackPanel Padding="12" Margin="-990,0">
-                <ProgressBar x:Name="UploadFilePgbr" Value="38" Maximum="200" Margin="-40,132" Width="450"/>
+                <ProgressBar x:Name="UploadFilePgbr" Value="38" Maximum="100" Margin="-40,132" Width="450"/>
             </StackPanel>
         </Grid>
     </Grid>

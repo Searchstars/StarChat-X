@@ -15,6 +15,7 @@ using SharpCompress.Writers;
 using System.Text.Unicode;
 using System.Security.Cryptography;
 using System.Reflection.Metadata;
+using System.Web;
 
 namespace StarChatServer
 {
@@ -215,10 +216,11 @@ namespace StarChatServer
 
         static async Task FileShareSerivce(HttpListenerRequest req, HttpListenerResponse resp)
         {
+            var get_filename = HttpUtility.UrlDecode(req.Url.AbsolutePath.Split('/')[2],Encoding.UTF8);
+            Console.WriteLine("FileShareService: TryGet (URL Decode) =" + get_filename);
             try
             {
-                var get_filename = req.Url.AbsolutePath.Split('/')[2];
-                var dataBytes = File.ReadAllBytes("fspath/" + get_filename);
+                var dataBytes = File.ReadAllBytes("./GetFileShare/" + get_filename);
                 resp.ContentType = "application/octet-stream";
                 resp.ContentEncoding = Encoding.UTF8;
                 resp.ContentLength64 = dataBytes.LongLength;
@@ -265,6 +267,8 @@ namespace StarChatServer
             var request = Serializer.Deserialize<ProtobufMessageSend>(new MemoryStream(requestData));
 
             var tokenExists = await CheckTokenExists(request.token);
+
+            Console.WriteLine("SendMsg");
 
             if (!tokenExists)
             {
@@ -337,12 +341,20 @@ namespace StarChatServer
                 }
                 else if (request.msg_type == "bin")
                 {
-                    var filesavename = "GetFileShare/" + GetRandomString(40, true, true, true, true, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                    if (!Directory.Exists("GetFileShare"))
+                    {
+                        Directory.CreateDirectory("GetFileShare");
+                    }
 
+                    var filesavename = "GetFileShare/" + GetRandomString(40, true, true, true, false, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") + "__}&origname&{__" + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[0];
+                    Console.WriteLine("bin-checked");
                     //将base64字符串转换为字节数组
                     byte[] bytes = Convert.FromBase64String(request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[1]);
+                    //.WriteLine("readed getb64=" + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[1]);
+                    Console.WriteLine("./" + filesavename);
                     //将字节数组写入文件
-                    File.WriteAllBytes(filesavename, bytes);
+                    File.WriteAllBytes("./" + filesavename, bytes);
+                    Console.WriteLine("writed");
                     JsonChatHistory new_jchis = new JsonChatHistory{
                         msg_send_time = "dont_view",
                         msgtype = "hyperlink",
@@ -353,6 +365,7 @@ namespace StarChatServer
                     update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", chathis_list.ToJson());
                     dbcollection_account.UpdateOne(filter_对方, update);
                     dbcollection_account.UpdateOne(filter_自己, update);
+                    Console.WriteLine("updated");
                     if (sse_dict.ContainsKey(request.targetid))
                     {
                         var writer = new StreamWriter(sse_dict[request.targetid].Response.OutputStream);
@@ -368,6 +381,7 @@ namespace StarChatServer
                         await writer.WriteAsync(message);
                         await writer.FlushAsync();
                     }
+                    Console.WriteLine("sended");
                 }
 
                 SetResponseContent(resp,"success>^<ok");
@@ -739,7 +753,15 @@ namespace StarChatServer
                     sse_dict.Remove(key);
                 }
 
-                await Task.Delay(1000); // Server tick 0.1s
+                await Task.Delay(1000);
+
+                /*
+                 * 根据用户流量进行修改
+                 * 高峰4tick (250)
+                 * 普通运营2tick (500)
+                 * 测试版1tick (1000)
+                 * 服务寄0.5tick (2000)
+                 */
             }
         }
 
@@ -793,7 +815,7 @@ namespace StarChatServer
             listener.Prefixes.Add(url);
             listener.Start();
             Console.WriteLine("Server Start!");
-            Console.WriteLine("StarChatServer is supported by ChatGPT, a language model developed by OpenAI.");
+            Console.WriteLine("StarChatServer is a private program. DONT LEAK IT !!!");
             Console.WriteLine("Listening for connections on {0}", url);
 
             Task.Run(WhileCheckDictContext);

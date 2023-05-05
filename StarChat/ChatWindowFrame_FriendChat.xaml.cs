@@ -21,6 +21,7 @@ using Windows.Foundation;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using System.Runtime.InteropServices;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -266,11 +267,33 @@ namespace StarChat
 
         private async void MenuFlyoutItem_Click_2(object sender, RoutedEventArgs e)//文件发送
         {
-            var filePicker = new FileOpenPicker();
-            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(RunningDataSave.chatwindow_static));
-            filePicker.FileTypeFilter.Add("*");
-            var file = await filePicker.PickSingleFileAsync();
-            LogWriter.LogInfo("用户正在尝试发送文件，选取的文件路径：" + file.Path);
+            var filepicker = new FileOpenPicker();
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(RunningDataSave.chatwindow_static);
+            WinRT.Interop.InitializeWithWindow.Initialize(filepicker, hwnd);
+            filepicker.ViewMode = PickerViewMode.Thumbnail;
+            filepicker.SuggestedStartLocation = PickerLocationId.Desktop;
+            filepicker.FileTypeFilter.Add("*");
+            var file = await filepicker.PickSingleFileAsync();
+            if (file != null)
+            {
+                LogWriter.LogInfo("用户正在尝试发送文件，选取的文件路径为：" + file.Path);
+                MsgSender.SendFileToFriend(file.Path, RunningDataSave.chatframe_targetid, false, false);
+            }
+        }
+
+        [ComImport]
+        [Guid("3E68D4BD-7135-4D10-8018-9FB6D9F33FA1")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IInitializeWithWindow
+        {
+            void Initialize(IntPtr hwnd);
+        }
+        [ComImport]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [Guid("EECDBF0E-BAE9-4CB6-A68E-9598E1CB57BB")]
+        internal interface IWindowNative
+        {
+            IntPtr WindowHandle { get; }
         }
     }
 }
