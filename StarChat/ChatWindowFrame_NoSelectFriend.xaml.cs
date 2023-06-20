@@ -29,6 +29,7 @@ namespace StarChat
         public ChatWindowFrame_NoSelectFriend()
         {
             this.InitializeComponent();
+            FriendsPage.Navigated_ChatFrame = false;
         }
     }
 }

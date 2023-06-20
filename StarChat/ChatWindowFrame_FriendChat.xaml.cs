@@ -104,7 +104,24 @@ namespace StarChat
                             AreTransportControlsEnabled = true,
                             Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(item.msglink)),
                             AutoPlay = false,
-                            Margin = new Thickness(30, 20, 0, 0)
+                            Margin = new Thickness(30, 20, 0, 0),
+                            TransportControls = new MediaTransportControls
+                            {
+                                IsCompact = true,
+                                IsFastForwardEnabled = true,
+                                IsFastRewindEnabled = true,
+                                IsFocusEngagementEnabled = true,
+                                IsHoldingEnabled = true,
+                                IsPlaybackRateEnabled = true,
+                                IsPlaybackRateButtonVisible = false,
+                                IsRepeatEnabled = true,
+                                IsSeekEnabled = true,
+                                IsRightTapEnabled = true,
+                                IsVolumeEnabled = true,
+                                IsTapEnabled = true,
+                                IsSkipBackwardEnabled = true,
+                                IsStopEnabled = true,
+                            },
                         });
                     }
                 }
@@ -142,6 +159,17 @@ namespace StarChat
             }
         }
 
+        private void ReInitFrame()
+        {
+            this.sp_chatcontent.Children.Clear();
+            System.GC.Collect();
+            Console.WriteLine("Frame clear");
+            nowtargetid = RunningDataSave.chatframe_targetid;
+            lat_scrollviewer_height = 520;
+            InitChatHistory();
+            scroll_to_under();
+        }
+
         public async Task target_check()
         {
             while (true)
@@ -150,13 +178,12 @@ namespace StarChat
                 //Console.WriteLine("nowtargetid=" + nowtargetid + " RunningDataSave.chatframe_targetid=" + RunningDataSave.chatframe_targetid);
                 if (nowtargetid != RunningDataSave.chatframe_targetid)
                 {
-                    this.sp_chatcontent.Children.Clear();
-                    System.GC.Collect();
-                    Console.WriteLine("Frame clear");
-                    nowtargetid = RunningDataSave.chatframe_targetid;
-                    lat_scrollviewer_height = 520;
-                    InitChatHistory();
-                    scroll_to_under();
+                    ReInitFrame();
+                }
+                if (RunningDataSave.need_reinit_chat_frame)
+                {
+                    ReInitFrame();
+                    RunningDataSave.need_reinit_chat_frame = false;
                 }
             }
         }

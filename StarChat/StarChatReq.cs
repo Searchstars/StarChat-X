@@ -737,6 +737,33 @@ namespace StarChat
                                     Margin = new Thickness(30, 20, 0, 0),
                                 });
                             }
+                            if (DataCH.msgtype == "video")
+                            {
+                                RunningDataSave.friendchatframe_sp_chatcontent.Children.Add(new MediaPlayerElement
+                                {
+                                    AreTransportControlsEnabled = true,
+                                    Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(DataCH.msglink)),
+                                    AutoPlay = false,
+                                    Margin = new Thickness(30, 20, 0, 0),
+                                    TransportControls = new MediaTransportControls
+                                    {
+                                        IsCompact = true,
+                                        IsFastForwardEnabled = true,
+                                        IsFastRewindEnabled = true,
+                                        IsFocusEngagementEnabled = true,
+                                        IsHoldingEnabled = true,
+                                        IsPlaybackRateEnabled = true,
+                                        IsPlaybackRateButtonVisible = false,
+                                        IsRepeatEnabled = true,
+                                        IsSeekEnabled = true,
+                                        IsRightTapEnabled = true,
+                                        IsVolumeEnabled = true,
+                                        IsTapEnabled = true,
+                                        IsSkipBackwardEnabled = true,
+                                        IsStopEnabled = true,
+                                    },
+                                });
+                            }
                             //RunningDataSave.scrollviewer_chatcontent.ChangeView(null, RunningDataSave.scrollviewer_chatcontent.ExtentHeight, null, false);
                         }
                     }

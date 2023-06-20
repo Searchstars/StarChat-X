@@ -45,6 +45,8 @@ namespace StarChat
 
         public static StackPanel chatwindow_bar_skp = null;
 
+        public static bool need_reinit_chat_frame = false;
+
         public static bool upload_window_open = false;
 
         public static TextBlock FileUploadWindow_FileNameTxb = null;
