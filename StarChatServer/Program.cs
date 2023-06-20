@@ -94,7 +94,11 @@ namespace StarChatServer
             {
 
             }
-            }
+            },
+            {"BindServices", new BsonArray
+            {
+                new BsonDocument{ { "name", "StarNetwork" }, {"stat","wait_to_bind" }, {"service_data_json","{}" } }
+            } }
         }
     };
             dbcollection_account.InsertMany(doc);
@@ -220,12 +224,33 @@ namespace StarChatServer
             Console.WriteLine("FileShareService: TryGet (URL Decode) =" + get_filename);
             try
             {
-                var dataBytes = File.ReadAllBytes("./GetFileShare/" + get_filename);
-                resp.ContentType = "application/octet-stream";
-                resp.ContentEncoding = Encoding.UTF8;
-                resp.ContentLength64 = dataBytes.LongLength;
-                resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
-                resp.Close();
+                if (get_filename == "geteula")
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(File.ReadAllText("./EULA_RESP.txt"));
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+                    resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
+                    resp.Close();
+                }
+                else if (get_filename == "getpcyla")
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(File.ReadAllText("./PCYLA_RESP.txt"));
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+                    resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
+                    resp.Close();
+                }
+                else
+                {
+                    var dataBytes = File.ReadAllBytes("./GetFileShare/" + get_filename);
+                    resp.ContentType = "application/octet-stream";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+                    resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
+                    resp.Close();
+                }
             }
             catch
             {
@@ -355,9 +380,18 @@ namespace StarChatServer
                     //将字节数组写入文件
                     File.WriteAllBytes("./" + filesavename, bytes);
                     Console.WriteLine("writed");
+                    string pre_msgtype = "hyperlink";
+                    if(request.msg_type == "vid")
+                    {
+                        pre_msgtype = "video";
+                    }
+                    else if (request.msg_type == "img")
+                    {
+                        pre_msgtype = "image";
+                    }
                     JsonChatHistory new_jchis = new JsonChatHistory{
                         msg_send_time = "dont_view",
-                        msgtype = "hyperlink",
+                        msgtype = pre_msgtype,
                         msglink = clientcontent_url + filesavename,
                         msgcontent = "来自 " + request.userchatname + " 的文件: " + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[0]//Split字符串方法by newbing
                     };
@@ -779,24 +813,10 @@ namespace StarChatServer
                 foreach (string chatname in chatnames)
                 {
                     var doc = new BsonDocument{
-                        { "RegTime",new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()},
                         { "username","StarChatRobotOfficial_"},
                         { "password","cantlogin938293892398298392838929382893289398293829skdskdksjdjkskdjskjdksjdkj"},
                         { "uid",now_can_use_uid},
                         { "chatname",chatname },
-                        { "isFinishFirstLoginSettings", "no"},
-                        { "ban","no" },
-                        { "banreason","该账号未被封禁，若您看到了这段信息，请联系开发者" },
-                        { "JoinedGroups",new  BsonArray
-                        {
-
-                        }
-                        },
-                        { "Friends",new  BsonArray
-                            {
-
-                            }
-                        },
                     };
                     docs.Add(doc);
                     now_can_use_uid++;

@@ -17,6 +17,9 @@
     <None Update="App.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="EulaWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="FileUploadProgressBAR.xaml">
       <SubType>Designer</SubType>
     </Page>

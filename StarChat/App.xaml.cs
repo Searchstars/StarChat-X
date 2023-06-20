@@ -23,6 +23,8 @@ namespace StarChat
         public static double appver = 1.0;
         public static string appreleasetype = "alpha";
         public static string chatserverip = "127.0.0.1:8000";//本地调试 127.0.0.1:8000
+        public static bool open_main_win = true;
+        public static bool mainwindow_actived = false;
 
         public async static void getip()
         {
@@ -32,7 +34,8 @@ namespace StarChat
                 RunningDataSave.user_ip_addr = RunningDataSave.user_ip_addr.Split("<a href=\"/ipv4/")[1].Split("\"")[0];
                 LogWriter.LogInfo("成功获取用户IP地址：" + RunningDataSave.user_ip_addr);
             }
-            catch {
+            catch
+            {
                 LogWriter.LogError("Network Error");
                 Tools.Delay(1000);
                 var cd = new ContentDialog
@@ -42,13 +45,16 @@ namespace StarChat
                     CloseButtonText = "OK",
                     DefaultButton = ContentDialogButton.Close
                 };
-                cd.XamlRoot = RunningDataSave.mainwindow_static.Content.XamlRoot;
-                await cd.ShowAsync();
+                if (mainwindow_actived)
+                {
+                    cd.XamlRoot = RunningDataSave.mainwindow_static.Content.XamlRoot;
+                    await cd.ShowAsync();
+                }
                 RunningDataSave.user_ip_addr = "network_error";
 #if DEBUG
                 LogWriter.LogInfo("Debug免死");
 #else
-                System.Environment.Exit(0);
+            System.Environment.Exit(0);
 #endif
             }
         }
@@ -97,6 +103,11 @@ namespace StarChat
         /// </summary>
         public App()
         {
+            if (Win32Api.IsAdministrator())
+            {
+                System.Windows.Forms.MessageBox.Show("Welcome to StarChat! But...\n\n请不要以管理员身份运行此程序！\nPlease do not run this program as administrator!\nVeuillez ne pas exécuter ce programme en tant qu'administrateur !\nこのプログラムを管理者として実行しないでください。\n이 프로그램을 관리자로 실행하지 마십시오!");
+            }
+
             this.UnhandledException += toasterror;
             AppDomain.CurrentDomain.UnhandledException += toasterror_appdomain;
             try
@@ -112,11 +123,23 @@ namespace StarChat
                 catch (FileNotFoundException e)
                 {
                     LogWriter.LogInfo("看起来这是你第一次启动StarChat，可以先看看wiki哦~");
+                    open_main_win = false;
+                    Window eula_window = new EulaWindow();
+                    eula_window.Activate();
+                    goto after_eula_check;
                 }
                 catch (Exception e)
                 {
                     LogWriter.LogError("在判断上一次的log是否正常结尾时出现报错，报错信息：" + e);
                 }
+                if (File.Exists("eula_not_agree"))
+                {
+                    LogWriter.LogInfo("上次没同意EULA，这次继续显示");
+                    open_main_win = false;
+                    Window eula_window = new EulaWindow();
+                    eula_window.Activate();
+                }
+                after_eula_check:
                 LogWriter.InitLogWriterStep2();
                 LogWriter.LogInfo("StarChat开始运行");
 
@@ -148,8 +171,12 @@ namespace StarChat
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             LogWriter.LogInfo("OnLaunched触发");
-            m_window = new MainWindow();
-            m_window.Activate();
+            if (open_main_win)
+            {
+                m_window = new MainWindow();
+                m_window.Activate();
+                mainwindow_actived = true;
+            }
         }
 
         private Window m_window;

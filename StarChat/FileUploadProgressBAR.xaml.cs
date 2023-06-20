@@ -18,6 +18,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT.Interop;
 using Microsoft.UI.Windowing;
+using Microsoft.Win32;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -58,6 +59,11 @@ namespace StarChat
             RunningDataSave.FileUploadWindow_UploadSpeedTxb = this.UploadFileSpeed;
             RunningDataSave.FileUploadWindow_UploadPGBR = this.UploadFilePgbr;
             RunningDataSave.FileUploadWindow_appWindow = appWindow;
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").GetValue("AppsUseLightTheme").ToString() == "1")
+            {
+                LogWriter.LogInfo("好吧，看来目前系统使用的是浅色模式...切换背景颜色咯！");
+                RootGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243));
+            }
         }
     }
 }

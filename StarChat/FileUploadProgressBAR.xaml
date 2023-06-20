@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="#1F2023">
+    <Grid x:Name="RootGrid" Background="#1F2023">
         <Grid x:Name="AppTitleBar" Height="32">
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>

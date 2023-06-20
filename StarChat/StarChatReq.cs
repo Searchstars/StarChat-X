@@ -119,20 +119,20 @@ namespace StarChat
                     speed_unit = "k/s";
                     uploadSpeed = uploadSpeed / 1024.0;
                 }
-                if(uploadSpeed > 1048576.0)
+                if(uploadSpeed > 1024)
                 {
                     speed_unit = "m/s";
-                    uploadSpeed = uploadSpeed / 1024.0 / 1024.0;
+                    uploadSpeed = uploadSpeed / 1024.0;
                 }
-                if(uploadSpeed > 1073741824.0)
+                if(uploadSpeed > 1024)
                 {
                     speed_unit = "g/s 你宽带太牛逼了富哥V50";
-                    uploadSpeed = uploadSpeed / 1024.0 / 1024.0 / 1024.0;
+                    uploadSpeed = uploadSpeed / 1024.0;
                 }
-                if(uploadSpeed > 1099511627776.0)
+                if(uploadSpeed > 1024)
                 {
                     speed_unit = "t/s 您？";
-                    uploadSpeed = uploadSpeed / 1024.0 / 1024.0 / 1024.0 / 1024.0;
+                    uploadSpeed = uploadSpeed / 1024.0;
                 }
                 RunningDataSave.FileUploadWindow_UploadSpeedTxb.Text = "当前上传速度：" + uploadSpeed.ToString() + speed_unit;
             });

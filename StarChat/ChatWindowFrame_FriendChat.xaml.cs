@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using System.Runtime.InteropServices;
+using Windows.Media.Playback;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -93,6 +94,16 @@ namespace StarChat
                             Source = bipm,
                             VerticalAlignment = VerticalAlignment.Center,
                             Margin = new Thickness(30, 20, 0, 0),
+                        });
+                    }
+                    if (item.msgtype == "video")
+                    {
+                        sp_chatcontent.Children.Add(new MediaPlayerElement
+                        {
+                            AreTransportControlsEnabled = true,
+                            Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(item.msglink)),
+                            AutoPlay = false,
+                            Margin = new Thickness(30, 20, 0, 0)
                         });
                     }
                 }
@@ -235,7 +246,6 @@ namespace StarChat
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)//图片发送
         {
-            /*
             var filePicker = new FileOpenPicker();
             WinRT.Interop.InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(RunningDataSave.chatwindow_static));
             filePicker.FileTypeFilter.Add(".jpg");
@@ -246,14 +256,14 @@ namespace StarChat
             filePicker.FileTypeFilter.Add(".webp");
             var file = await filePicker.PickSingleFileAsync();
             LogWriter.LogInfo("用户正在尝试发送图片，选取的图片路径：" + file.Path);
-            */
         }
 
         private async void MenuFlyoutItem_Click_1(object sender, RoutedEventArgs e)//视频发送
         {
-            /*
+
             var filePicker = new FileOpenPicker();
             WinRT.Interop.InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(RunningDataSave.chatwindow_static));
+            filePicker.ViewMode = PickerViewMode.Thumbnail;
             filePicker.FileTypeFilter.Add(".mp4");
             filePicker.FileTypeFilter.Add(".webm");
             filePicker.FileTypeFilter.Add(".mov");
@@ -262,7 +272,6 @@ namespace StarChat
             filePicker.FileTypeFilter.Add(".avi");
             var file = await filePicker.PickSingleFileAsync();
             LogWriter.LogInfo("用户正在尝试发送视频，选取的视频路径：" + file.Path);
-            */
         }
 
         private async void MenuFlyoutItem_Click_2(object sender, RoutedEventArgs e)//文件发送
@@ -271,7 +280,6 @@ namespace StarChat
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(RunningDataSave.chatwindow_static);
             WinRT.Interop.InitializeWithWindow.Initialize(filepicker, hwnd);
             filepicker.ViewMode = PickerViewMode.Thumbnail;
-            filepicker.SuggestedStartLocation = PickerLocationId.Desktop;
             filepicker.FileTypeFilter.Add("*");
             var file = await filepicker.PickSingleFileAsync();
             if (file != null)

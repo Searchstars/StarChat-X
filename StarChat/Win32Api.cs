@@ -9,6 +9,7 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 
 public class Win32Api
 {
@@ -112,6 +113,13 @@ public class Win32Api
             string deviceId = BitConverter.ToString(hashBytes).Replace("-", "");
             return deviceId;
         }
+    }
+
+    public static bool IsAdministrator()
+    {
+        WindowsIdentity identity = WindowsIdentity.GetCurrent();
+        WindowsPrincipal principal = new WindowsPrincipal(identity);
+        return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
 
     public class ProcessContractResolver : DefaultContractResolver

@@ -2,5 +2,8 @@
 /StarChat/obj/*
 /StarChatServer/bin/*
 /StarChatServer/obj/*
+/StarChatServer/currentuid.txt
+/StarChatServer/firstrun
+/StarChatServer/GetFileShare/*
 /.vs/*
 /性能寄告

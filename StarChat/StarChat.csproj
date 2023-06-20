@@ -18,6 +18,7 @@
     <None Remove="ChatWindowFrame_FriendChat.xaml" />
     <None Remove="ChatWindowFrame_NoSelectFriend.xaml" />
     <None Remove="DebugOptionsWindow.xaml" />
+    <None Remove="EulaWindow.xaml" />
     <None Remove="FileUploadProgressBAR.xaml" />
     <None Remove="FriendsPage.xaml" />
     <None Remove="GroupsPage.xaml" />
@@ -64,6 +65,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="FileUploadProgressBAR.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="EulaWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="memes_warning_list.json">
