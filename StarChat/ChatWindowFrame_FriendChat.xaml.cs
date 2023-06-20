@@ -23,6 +23,7 @@ using Windows.Storage.Pickers;
 using WinRT.Interop;
 using System.Runtime.InteropServices;
 using Windows.Media.Playback;
+using Windows.Web.Http.Diagnostics;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -121,6 +122,7 @@ namespace StarChat
             while (true)
             {
                 await Task.Delay(200);
+                //Console.WriteLine("lat_scrollviewer_height=" + lat_scrollviewer_height + " scrollviewer_chatcontent.ExtentHeight=" + scrollviewer_chatcontent.ExtentHeight);
                 if (lat_scrollviewer_height != scrollviewer_chatcontent.ExtentHeight && scrollviewer_chatcontent.ExtentHeight > 520)
                 {
                     Console.WriteLine("scr_output: " + lat_scrollviewer_height + " != " + scrollviewer_chatcontent.ExtentHeight);
@@ -128,6 +130,7 @@ namespace StarChat
                     {
                         scrollviewer_chatcontent.ChangeView(null, scrollviewer_chatcontent.ExtentHeight, null, false);
                         lat_scrollviewer_height = scrollviewer_chatcontent.ExtentHeight;
+                        Console.WriteLine("lat_scrollviewer_height=" + lat_scrollviewer_height);
                     }
                     Console.WriteLine("finish");
                 }
@@ -135,6 +138,25 @@ namespace StarChat
                 {
                     Console.WriteLine("scr_break_reason: " + nowtargetid + "!=" + RunningDataSave.chatframe_targetid);
                     break;
+                }
+            }
+        }
+
+        public async Task target_check()
+        {
+            while (true)
+            {
+                await Task.Delay(200);
+                //Console.WriteLine("nowtargetid=" + nowtargetid + " RunningDataSave.chatframe_targetid=" + RunningDataSave.chatframe_targetid);
+                if (nowtargetid != RunningDataSave.chatframe_targetid)
+                {
+                    this.sp_chatcontent.Children.Clear();
+                    System.GC.Collect();
+                    Console.WriteLine("Frame clear");
+                    nowtargetid = RunningDataSave.chatframe_targetid;
+                    lat_scrollviewer_height = 520;
+                    InitChatHistory();
+                    scroll_to_under();
                 }
             }
         }
@@ -148,6 +170,7 @@ namespace StarChat
             nowtargetid = RunningDataSave.chatframe_targetid;
             InitChatHistory();
             scroll_to_under();
+            target_check();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)//SendFile Onclick
@@ -255,7 +278,11 @@ namespace StarChat
             filePicker.FileTypeFilter.Add(".jpeg");
             filePicker.FileTypeFilter.Add(".webp");
             var file = await filePicker.PickSingleFileAsync();
-            LogWriter.LogInfo("用户正在尝试发送图片，选取的图片路径：" + file.Path);
+            if (file != null)
+            {
+                LogWriter.LogInfo("用户正在尝试发送图片，选取的文件路径为：" + file.Path);
+                MsgSender.SendFileToFriend(file.Path, RunningDataSave.chatframe_targetid, true, false);
+            }
         }
 
         private async void MenuFlyoutItem_Click_1(object sender, RoutedEventArgs e)//视频发送
@@ -271,7 +298,11 @@ namespace StarChat
             filePicker.FileTypeFilter.Add(".flv");
             filePicker.FileTypeFilter.Add(".avi");
             var file = await filePicker.PickSingleFileAsync();
-            LogWriter.LogInfo("用户正在尝试发送视频，选取的视频路径：" + file.Path);
+            if (file != null)
+            {
+                LogWriter.LogInfo("用户正在尝试发送视频，选取的文件路径为：" + file.Path);
+                MsgSender.SendFileToFriend(file.Path, RunningDataSave.chatframe_targetid, false, true);
+            }
         }
 
         private async void MenuFlyoutItem_Click_2(object sender, RoutedEventArgs e)//文件发送

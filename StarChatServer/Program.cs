@@ -364,7 +364,7 @@ namespace StarChatServer
                         await writer.FlushAsync();
                     }
                 }
-                else if (request.msg_type == "bin")
+                else if (request.msg_type == "bin" || request.msg_type == "vid" || request.msg_type == "img")
                 {
                     if (!Directory.Exists("GetFileShare"))
                     {

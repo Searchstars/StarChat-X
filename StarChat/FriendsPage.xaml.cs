@@ -29,6 +29,8 @@ namespace StarChat
     public sealed partial class FriendsPage : Page
     {
 
+        public static bool Navigated_ChatFrame = false;
+
         public async void init_friend_page()
         {
             var getfrilist = new ProtobufGetFriendsList
@@ -84,7 +86,11 @@ namespace StarChat
                 StackPanel selecteditem_sp =  (StackPanel)FriendsListView.SelectedItem;
                 RunningDataSave.chatframe_type = "friend";
                 RunningDataSave.chatframe_targetid = int.Parse(selecteditem_sp.Tag.ToString());
-                ChatFrame.Navigate(typeof(ChatWindowFrame_FriendChat));
+                if (!Navigated_ChatFrame)
+                {
+                    ChatFrame.Navigate(typeof(ChatWindowFrame_FriendChat));
+                    Navigated_ChatFrame = true;
+                }
             }
         }
     }
