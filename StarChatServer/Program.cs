@@ -29,6 +29,7 @@ namespace StarChatServer
         public static MongoClient client = new MongoClient(dburl);
         public static IMongoCollection<BsonDocument> dbcollection_test = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("test");
         public static IMongoCollection<BsonDocument> dbcollection_account = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("accounts");
+        public static IMongoCollection<BsonDocument> dbcollection_groups = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("groups");
         public static IMongoCollection<BsonDocument> dbcollection_tokens = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("tokens");
         public static IMongoCollection<BsonDocument> dbcollection_logs = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("logs");
         public static int pageViews = 0;
@@ -66,41 +67,77 @@ namespace StarChatServer
                 return ms.GetBuffer();
             }
         }
+
+        public static void AddNewGroup(IMongoCollection<BsonDocument> dbcollection_groups, string groupname, int group_own_uid)
+        {
+            int gid = int.Parse(File.ReadAllText("currentgid.txt"));
+            var doc = new[]
+            {
+                new BsonDocument{
+                    { "AddTime", new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() },
+                    { "GroupName", groupname },
+                    { "GroupOwnUid", group_own_uid },
+                    { "gid", gid},
+                    { "members_uid", new BsonArray
+                        {
+                            0,
+                            1
+                        } 
+                    },
+                    { "chathistory_clips" , new BsonArray 
+                        { 
+                            new BsonDocument{{ "timestamp", new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() }, {"clip_id",0 } },
+                            new BsonDocument{{ "timestamp", new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() + 2 }, {"clip_id",1 } }
+                        } 
+                    },
+                    { "chathistorys", new BsonArray
+                        {
+                            new BsonDocument{ { "clip_id",0 }, { "chathistory_json", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"placeholder\",\"msglink\":\"dont_need\",\"msgcontent\":\"\"}]" } }
+                        } 
+                    }
+                }
+            };
+            dbcollection_groups.InsertMany(doc);
+            gid++;
+            File.WriteAllText("currentgid.txt",gid.ToString());
+        }
+
         public static void AddNewUser(IMongoCollection<BsonDocument> dbcollection_account, string username, string password, int uid)
         {
             var doc = new[]
             {
-        new BsonDocument{
-            { "RegTime", new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() },
-            { "username", username },
-            { "password", password },
-            { "uid", uid },
-            { "chatname", "用户_" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString() },
-            { "isFinishFirstLoginSettings", "no" },
-            { "ban", "no" },
-            { "banreason", "该账号未被封禁，若您看到了这段信息，请联系开发者" },
-            { "JoinedGroups", new BsonArray
-                {
-                    new BsonDocument{ { "id", 1 }},
-                }
-            },
-            { "Friends", new BsonArray
-                {
-                    new BsonDocument{ { "id", 0 }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"shhhh...看起来，这里有一个新来的？\n别再等啦！查看官方wiki并加入官方群组，开始你的StarChat之旅！\nWelcome to StarChat !\"}]" } },
-                    new BsonDocument{ { "id", 1 }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"哈喽哇？不知道怎么使用？给我发个/help吧！当然，你也可以查看：\"},{\"msg_send_time\": \"dont_view\",\"msgtype\":\"hyperlink\",\"msglink\":\"https://chat.stargazing.studio/documents\",\"msgcontent\":\"官方文档\"}]" } }
-                }
-            },
-            { "FriendRequests" , new BsonArray
-            {
+                new BsonDocument{
+                    { "RegTime", new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() },
+                    { "username", username },
+                    { "password", password },
+                    { "uid", uid },
+                    { "chatname", "用户_" + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString() },
+                    { "isFinishFirstLoginSettings", "no" },
+                    { "ban", "no" },
+                    { "banreason", "该账号未被封禁，若您看到了这段信息，请联系开发者" },
+                    { "JoinedGroups", new BsonArray
+                        {
+                            new BsonDocument{ { "id", 0 }},
+                        }
+                    },
+                    { "Friends", new BsonArray
+                        {
+                            new BsonDocument{ { "id", 0 }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"shhhh...看起来，这里有一个新来的？\n别再等啦！查看官方wiki并加入官方群组，开始你的StarChat之旅！\nWelcome to StarChat !\"}]" } },
+                            new BsonDocument{ { "id", 1 }, { "chat_history", "[{\"msg_send_time\": \"dont_view\",\"msgtype\":\"text\",\"msglink\":\"dont_need\",\"msgcontent\":\"哈喽哇？不知道怎么使用？给我发个/help吧！当然，你也可以查看：\"},{\"msg_send_time\": \"dont_view\",\"msgtype\":\"hyperlink\",\"msglink\":\"https://chat.stargazing.studio/documents\",\"msgcontent\":\"官方文档\"}]" } }
+                        }
+                    },
+                    { "FriendRequests" , new BsonArray
+                        {
 
-            }
-            },
-            {"BindServices", new BsonArray
-            {
-                new BsonDocument{ { "name", "StarNetwork" }, {"stat","wait_to_bind" }, {"service_data_json","{}" } }
-            } }
-        }
-    };
+                        }
+                    },
+                    {"BindServices", new BsonArray
+                        {
+                            new BsonDocument{ { "name", "StarNetwork" }, {"stat","wait_to_bind" }, {"service_data_json","{}" } }
+                        } 
+                    }
+                }
+            };
             dbcollection_account.InsertMany(doc);
         }
 
@@ -166,6 +203,10 @@ namespace StarChatServer
                 {
                     GetFriendNameFromIdAsync(req, resp);
                 }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetGroupNameFromId")
+                {
+                    GetGroupNameFromIdAsync(req, resp);
+                }
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetChatHistory")
                 {
                     GetChatHistoryAsync(req, resp);
@@ -193,6 +234,10 @@ namespace StarChatServer
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetFriendsList")
                 {
                     GetFriendsList(req, resp);
+                }
+                else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/GetGroupsList")
+                {
+                    GetGroupsList(req, resp);
                 }
                 else if (req.HttpMethod == HttpMethod.Post.Method && req.Url.AbsolutePath == "/SendMessageReq")
                 {
@@ -300,8 +345,89 @@ namespace StarChatServer
                 SetResponseContent(resp, "你说得对，但是token error");
                 return;
             }
+            if(request.target_type == "group")
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("gid", request.targetid);//Object reference not set to an instance of an object.报错原因：target错写成client
+                var result = await dbcollection_groups.Find(filter).FirstOrDefaultAsync();
+                if (result != null)
+                {}
+                else
+                {
+                    SetResponseContent(resp, "Server Error");
+                    return;
+                }
+                string json_chat_history_string = "";
+                int last_clip_id = 0;
+                foreach (var clip_ in result["chathistorys"].AsBsonArray)
+                {
+                    json_chat_history_string = (string)clip_["chathistory_json"];//操你妈的BsonArray拿不到Length只能开For拿末尾json了
+                    last_clip_id = (int)clip_["clip_id"];
+                }
+                var json_chat_history = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JsonChatHistory>>(json_chat_history_string);
+                var ser_json = new JsonChatHistory{};
+                if (request.msg_type == "text")
+                {
+                    ser_json = new JsonChatHistory
+                    {
+                        msg_send_time = "dont_view",
+                        msgtype = "text",
+                        msglink = "dont_need",
+                        msgcontent = request.userchatname + ": " + request.msg_b64
+                    };
+                }
+                else if (request.msg_type == "bin" || request.msg_type == "vid" || request.msg_type == "img")
+                {
+                    if (!Directory.Exists("GetFileShare"))
+                    {
+                        Directory.CreateDirectory("GetFileShare");
+                    }
 
-            if(request.target_type == "friend")
+                    var filesavename = "GetFileShare/" + GetRandomString(40, true, true, true, false, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") + "__}&origname&{__" + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[0];
+                    Console.WriteLine("bin-checked");
+                    //将base64字符串转换为字节数组
+                    byte[] bytes = Convert.FromBase64String(request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[1]);
+                    //.WriteLine("readed getb64=" + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[1]);
+                    Console.WriteLine("./" + filesavename);
+                    //将字节数组写入文件
+                    File.WriteAllBytes("./" + filesavename, bytes);
+                    Console.WriteLine("writed");
+                    string pre_msgtype = "hyperlink";
+                    if (request.msg_type == "vid")
+                    {
+                        pre_msgtype = "video";
+                    }
+                    else if (request.msg_type == "img")
+                    {
+                        pre_msgtype = "image";
+                    }
+                    ser_json = new JsonChatHistory
+                    {
+                        msg_send_time = "dont_view",
+                        msgtype = pre_msgtype,
+                        msglink = clientcontent_url + filesavename,
+                        msgcontent = "来自 " + request.userchatname + " 的文件: " + request.msg_b64.Split(new string[] { ">biname^split<" }, StringSplitOptions.None)[0]//Split字符串方法by newbing
+                    };
+                }
+                json_chat_history.Add(ser_json);
+                var update = Builders<BsonDocument>.Update.Set("chathistorys.$[elem].chathistory_json", json_chat_history.ToJson());
+                var arrayFilters = new List<ArrayFilterDefinition>
+                {
+                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("elem.clip_id", last_clip_id))
+                };
+                dbcollection_groups.UpdateOne(filter, update, new UpdateOptions { ArrayFilters = arrayFilters });
+                foreach (int memberuid in result["members_uid"].AsBsonArray)
+                {
+                    if (sse_dict.ContainsKey(memberuid))
+                    {
+                        var writer = new StreamWriter(sse_dict[memberuid].Response.OutputStream);
+                        var message = $"data: {"newgrpmsg>" + request.targetid.ToString() + ">" + (Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(ser_json.ToJson())))}\n\n";
+                        await writer.WriteAsync(message);
+                        await writer.FlushAsync();
+                    }//挨个发SSE
+                }
+                SetResponseContent(resp, "success>^<ok");
+            }
+            else if(request.target_type == "friend")//下面屎山别动 随时可能崩
             {
 
                 List<JsonChatHistory> chathis_list = new List<JsonChatHistory>();
@@ -312,7 +438,7 @@ namespace StarChatServer
                 var filter_自己 = Builders<BsonDocument>.Filter.And(
                     Builders<BsonDocument>.Filter.Eq("uid", request.selfuid),
                     Builders<BsonDocument>.Filter.ElemMatch("Friends", Builders<BsonDocument>.Filter.Eq("id", request.targetid)));
-                var update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", "{\"msg\": \"abca\"}");
+                var update = Builders<BsonDocument>.Update.Set("Friends.$.chat_history", "{\"msg\": \"abca\"}");//这里初始化是因为不在这里初始化下面就用不了了
                 var projection = Builders<BsonDocument>.Projection.Include("Friends.$");
                 var result = dbcollection_account.Find(filter_自己).Project(projection).FirstOrDefault();
                 if (result != null)
@@ -439,6 +565,25 @@ namespace StarChatServer
             var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
 
             SetResponseContent(resp, "success>^<" + result["Friends"].ToJson());
+        }
+
+        static async Task GetGroupsList(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var requestData = await ReadRequestData(req);
+            var request = Serializer.Deserialize<ProtobufGetGroupsList>(new MemoryStream(requestData));
+
+            var tokenExists = await CheckTokenExists(request.token);
+
+            if (!tokenExists)
+            {
+                SetResponseContent(resp, "你说得对，但是token error");
+                return;
+            }
+
+            var filter = Builders<BsonDocument>.Filter.Eq("uid", request.uid);
+            var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
+
+            SetResponseContent(resp, "success>^<" + result["JoinedGroups"].ToJson());
         }
 
         static async Task AllowFriendRequest(HttpListenerRequest req, HttpListenerResponse resp)
@@ -583,25 +728,41 @@ namespace StarChatServer
                     throw new Exception("Token not found");
                 }
 
-                if (request.target != "friend")
+                if (request.target == "group")
+                {
+                    var filter = Builders<BsonDocument>.Filter.Eq("gid", int.Parse(request.targetid));//Object reference not set to an instance of an object.报错原因：target错写成client
+                    var result = await dbcollection_groups.Find(filter).FirstOrDefaultAsync();
+
+                    foreach (var clip_ in result["chathistorys"].AsBsonArray)
+                    {
+                        Console.WriteLine("遍历中 clip_id=" + clip_["clip_id"]);
+                        if (clip_["clip_id"] == request.clip_id)
+                        {
+                            SetResponseContent(resp, $"success>^<{clip_["chathistory_json"]}");
+                        }
+                    }
+                }
+                else if (request.target == "friend")
+                {
+                    var filter = Builders<BsonDocument>.Filter.Eq("uid", int.Parse(request.clientuid));
+                    var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
+
+                    foreach (var friend in result["Friends"].AsBsonArray)
+                    {
+                        if (friend["id"].ToString() == request.targetid)
+                        {
+                            var chatname = result?["chatname"]?.AsString ?? "";
+                            SetResponseContent(resp, $"success>^<{friend["chat_history"]}");
+                            return;
+                        }
+                    }
+
+                    throw new Exception("Friend not found");
+                }
+                else
                 {
                     throw new Exception("Unsupported target type");
                 }
-
-                var filter = Builders<BsonDocument>.Filter.Eq("uid", int.Parse(request.clientuid));
-                var result = await dbcollection_account.Find(filter).FirstOrDefaultAsync();
-
-                foreach (var friend in result["Friends"].AsBsonArray)
-                {
-                    if (friend["id"].ToString() == request.targetid)
-                    {
-                        var chatname = result?["chatname"]?.AsString ?? "";
-                        SetResponseContent(resp, $"success>^<{friend["chat_history"]}");
-                        return;
-                    }
-                }
-
-                throw new Exception("Friend not found");
             }
             catch (Exception ex)
             {
@@ -637,6 +798,35 @@ namespace StarChatServer
             }
 
             SetResponseContent(resp, $"success>^<{chatname}");
+        }
+
+        static async Task GetGroupNameFromIdAsync(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            var data_poststr = await ReadRequestDataStr(req);
+            var data = Convert.FromBase64String(data_poststr);
+
+            var request = Serializer.Deserialize<ProtobufGidToGroupName>(new MemoryStream(data));
+            Console.WriteLine($"GetGroupNameFromId  TargetId：{request.targetid} Token: {request.token}");
+
+            var tokenExists = await CheckTokenExists(request.token);
+            if (!tokenExists)
+            {
+                SetResponseContent(resp, "eheheh_token_err");
+                return;
+            }
+
+            var filter = Builders<BsonDocument>.Filter.Eq("gid", request.targetid);
+            var projection = Builders<BsonDocument>.Projection.Include("GroupName");
+            var result = await dbcollection_groups.Find(filter).Project(projection).FirstOrDefaultAsync();
+
+            var GroupName = result?["GroupName"]?.AsString ?? "";
+            if (GroupName == null || GroupName == "")
+            {
+                SetResponseContent(resp, "eheheh_user_not_found");
+                return;
+            }
+
+            SetResponseContent(resp, $"success>^<{GroupName}");
         }
 
         private static async Task<string> ReadRequestDataStr(HttpListenerRequest req)
@@ -802,10 +992,12 @@ namespace StarChatServer
         public static void Main(string[] args)
         {
 
-            if (!File.Exists("firstrun"))
+            if (!File.Exists("firstrun"))//第一次运行即初始化数据库
             {
                 File.WriteAllText("currentuid.txt", "0");
+                File.WriteAllText("currentgid.txt", "0");
                 int now_can_use_uid = int.Parse(File.ReadAllText("currentuid.txt"));
+                int now_can_use_gid = int.Parse(File.ReadAllText("currentgid.txt"));
 
                 string[] chatnames = { "🤖 探索 StarChat", "🤖 StarChat 账号管理器" };
 
@@ -824,8 +1016,11 @@ namespace StarChatServer
 
                 File.WriteAllText("currentuid.txt", now_can_use_uid.ToString());
                 dbcollection_account.InsertMany(docs);
+
+                AddNewGroup(dbcollection_groups, "StarChatOfficial",0);
+
                 File.Create("firstrun").Close();
-            }
+            }//创建两个默认bot与1个Official Group
 
 
             now_can_use_uid = int.Parse(File.ReadAllText("currentuid.txt"));

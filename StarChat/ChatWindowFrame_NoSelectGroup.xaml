@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="StarChat.ChatWindowFrame_NoSelectGroup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StarChat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Border CornerRadius="10">
+        <Grid Background="	#06ffffff">
+            <TextBlock Text="看起来这里似乎一点东西也没有..." Margin="350,-60,0,0" VerticalAlignment="Center" FontSize="16"></TextBlock>
+            <TextBlock Text="尝试使用从互联网上各个地方找到的群组邀请码来加入几个群组吧？我也没法告诉你更多..." Margin="220,10,0,0" VerticalAlignment="Center" FontSize="12"></TextBlock>
+        </Grid>
+    </Border>
+</Page>

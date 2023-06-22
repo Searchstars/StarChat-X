@@ -1,30 +1,24 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
-using static System.Net.Mime.MediaTypeNames;
-using System.Net;
-using Microsoft.UI.Xaml.Media.Imaging;
-using System.Drawing;
-using Microsoft.Win32;
-using Windows.Foundation;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-using System.Runtime.InteropServices;
-using Windows.Media.Playback;
-using Windows.Web.Http.Diagnostics;
-using MongoDB.Bson;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -34,10 +28,8 @@ namespace StarChat
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class ChatWindowFrame_FriendChat : Page
+    public sealed partial class ChatWindowFrame_GroupChat : Page
     {
-
-        private Windows.UI.Text.Core.CoreTextEditContext _editContext;
 
         public static int meme_content_send_count = 0;
 
@@ -55,17 +47,25 @@ namespace StarChat
         {
             var gethisproto = new ProtobufGetChatHistory
             {
-                target = "friend",
+                target = "group",
                 clientuid = RunningDataSave.useruid.ToString(),
                 token = RunningDataSave.token,
-                targetid = RunningDataSave.chatframe_targetid.ToString()
+                targetid = RunningDataSave.chatframe_targetid.ToString(),
+                clip_id = 0
             };
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize(memoryStream, gethisproto);
                 var result = await StarChatReq.GetChatHistory(Convert.ToBase64String(memoryStream.ToArray()));
-
-                List<JsonChatHistory> chathis = JsonConvert.DeserializeObject<List<JsonChatHistory>>(result);
+                List<JsonChatHistory> chathis = null;
+                try
+                {
+                    chathis = JsonConvert.DeserializeObject<List<JsonChatHistory>>(result);
+                }
+                catch(Exception e)
+                {
+                    LogWriter.LogError("ChatWindowFrame_GroupChat报错" + e + " result=" + result);
+                }
                 foreach (var item in chathis)
                 {
                     if (item.msgtype == "text")
@@ -137,7 +137,8 @@ namespace StarChat
 
         public async Task scroll_to_under()
         {
-            if (RunningDataSave.chat_frame_auto_scroll) { 
+            if (RunningDataSave.chat_frame_auto_scroll)
+            {
                 while (true)
                 {
                     await Task.Delay(200);
@@ -150,7 +151,7 @@ namespace StarChat
                         Console.WriteLine("lat_scrollviewer_height=" + lat_scrollviewer_height);
                         Console.WriteLine("finish");
                     }
-                    if((nowtargetid != RunningDataSave.chatframe_targetid) && (RunningDataSave.chatframe_type == "friend"))
+                    if ((nowtargetid != RunningDataSave.chatframe_targetid) && (RunningDataSave.chatframe_type == "group"))
                     {
                         Console.WriteLine("scr_break_reason: " + nowtargetid + "!=" + RunningDataSave.chatframe_targetid);
                         break;
@@ -168,7 +169,7 @@ namespace StarChat
             nowtargetid = RunningDataSave.chatframe_targetid;
             lat_scrollviewer_height = 0;
             await InitChatHistory();
-            RunningDataSave.lat_friendchatframe_sp_chatcontent_ch = this.sp_chatcontent.Children;
+            RunningDataSave.lat_groupchatframe_sp_chatcontent_ch = this.sp_chatcontent.Children;
             scroll_to_under();
             target_check();
         }
@@ -177,9 +178,10 @@ namespace StarChat
         {
             while (true)
             {
+                Console.WriteLine("RunningDataSave.chatframe_type=" + RunningDataSave.chatframe_type + "RunningDataSave.chatframe_targetid=" + RunningDataSave.chatframe_targetid);
                 await Task.Delay(200);
                 //Console.WriteLine("nowtargetid=" + nowtargetid + " RunningDataSave.chatframe_targetid=" + RunningDataSave.chatframe_targetid);
-                if ((nowtargetid != RunningDataSave.chatframe_targetid) && (RunningDataSave.chatframe_type == "friend"))
+                if ((nowtargetid != RunningDataSave.chatframe_targetid) && (RunningDataSave.chatframe_type == "group"))
                 {
                     ReInitFrame();
                     break;
@@ -193,12 +195,12 @@ namespace StarChat
             }
         }
 
-        public ChatWindowFrame_FriendChat()
+        public ChatWindowFrame_GroupChat()
         {
             RunningDataSave.scrollviewer_chatcontent = this.scrollviewer_chatcontent;
             this.InitializeComponent();
-            RunningDataSave.friendchatframe_sp_chatcontent = this.sp_chatcontent;
-            RunningDataSave.lat_friendchatframe_sp_chatcontent_ch = this.sp_chatcontent.Children;
+            RunningDataSave.groupchatframe_sp_chatcontent = this.sp_chatcontent;
+            RunningDataSave.lat_groupchatframe_sp_chatcontent_ch = this.sp_chatcontent.Children;
             lat_scrollviewer_height = scrollviewer_chatcontent.ExtentHeight;
             nowtargetid = RunningDataSave.chatframe_targetid;
             InitChatHistory();
@@ -234,7 +236,7 @@ namespace StarChat
 
         private async void SendBtn_Click(object sender, RoutedEventArgs e)//SendMsg Onclick
         {
-            if(ChatSendContentBox.Text == "")
+            if (ChatSendContentBox.Text == "")
             {
                 var cd = new ContentDialog
                 {
@@ -246,7 +248,7 @@ namespace StarChat
                 cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
                 cd.ShowAsync();
             }
-            else if(meme_content_send_count >= 3)
+            else if (meme_content_send_count >= 3)
             {
                 var cd = new ContentDialog
                 {
@@ -259,18 +261,18 @@ namespace StarChat
                 cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
                 var res_select = await cd.ShowAsync();
                 LogWriter.LogInfo("meme warn 用户选择：" + res_select);
-                if(res_select == ContentDialogResult.Primary)
+                if (res_select == ContentDialogResult.Primary)
                 {
-                    MsgSender.SendTextToFriend(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
+                    MsgSender.SendTextToGroup(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
                 }
             }
             else
             {
-                foreach(var i in memes_warn_list.blocklist)
+                foreach (var i in memes_warn_list.blocklist)
                 {
                     if (ChatSendContentBox.Text.Contains(i))
                     {
-                        meme_content_send_count ++;
+                        meme_content_send_count++;
                         break;
                     }
                 }
@@ -289,14 +291,14 @@ namespace StarChat
                         cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
                         var res_select = await cd.ShowAsync();
                         LogWriter.LogInfo("obscene warn 用户选择：" + res_select);
-                        if(res_select == ContentDialogResult.Primary)
+                        if (res_select == ContentDialogResult.Primary)
                         {
-                            MsgSender.SendTextToFriend(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
+                            MsgSender.SendTextToGroup(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
                         }
                         break;
                     }
                 }
-                MsgSender.SendTextToFriend(ChatSendContentBox.Text,RunningDataSave.chatframe_targetid);
+                MsgSender.SendTextToGroup(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
             }
         }
 
@@ -314,7 +316,7 @@ namespace StarChat
             if (file != null)
             {
                 LogWriter.LogInfo("用户正在尝试发送图片，选取的文件路径为：" + file.Path);
-                MsgSender.SendFile(file.Path, RunningDataSave.chatframe_targetid, true, false,false);
+                MsgSender.SendFile(file.Path, RunningDataSave.chatframe_targetid, true, false, true);
             }
         }
 
@@ -334,7 +336,7 @@ namespace StarChat
             if (file != null)
             {
                 LogWriter.LogInfo("用户正在尝试发送视频，选取的文件路径为：" + file.Path);
-                MsgSender.SendFile(file.Path, RunningDataSave.chatframe_targetid, false, true,false);
+                MsgSender.SendFile(file.Path, RunningDataSave.chatframe_targetid, false, true, true);
             }
         }
 
@@ -349,7 +351,7 @@ namespace StarChat
             if (file != null)
             {
                 LogWriter.LogInfo("用户正在尝试发送文件，选取的文件路径为：" + file.Path);
-                MsgSender.SendFile(file.Path, RunningDataSave.chatframe_targetid, false, false, false);
+                MsgSender.SendFile(file.Path, RunningDataSave.chatframe_targetid, false, false, true);
             }
         }
 

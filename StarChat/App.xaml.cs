@@ -22,7 +22,7 @@ namespace StarChat
 
         public static double appver = 1.0;
         public static string appreleasetype = "alpha";
-        public static string chatserverip = "127.0.0.1:8000";//本地调试 127.0.0.1:8000
+        public static string chatserverip = "starchatbeta3_chatserver_area_sg.stargazing.studio";//本地调试 127.0.0.1:8000
         public static bool open_main_win = true;
         public static bool mainwindow_actived = false;
 
@@ -51,11 +51,14 @@ namespace StarChat
                     await cd.ShowAsync();
                 }
                 RunningDataSave.user_ip_addr = "network_error";
+                if (open_main_win)
+                {
 #if DEBUG
-                LogWriter.LogInfo("Debug免死");
+                    LogWriter.LogInfo("Debug免死");
 #else
-            System.Environment.Exit(0);
+                    System.Environment.Exit(0);
 #endif
+                }
             }
         }
 

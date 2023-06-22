@@ -41,6 +41,12 @@ namespace StarChat
 
         public static StackPanel friendchatframe_sp_chatcontent = null;
 
+        public static StackPanel groupchatframe_sp_chatcontent = null;
+
+        public static UIElementCollection lat_friendchatframe_sp_chatcontent_ch = null;
+
+        public static UIElementCollection lat_groupchatframe_sp_chatcontent_ch = null;
+
         public static ScrollViewer scrollviewer_chatcontent = null;
 
         public static StackPanel chatwindow_bar_skp = null;
@@ -48,6 +54,8 @@ namespace StarChat
         public static bool need_reinit_chat_frame = false;
 
         public static bool upload_window_open = false;
+
+        public static bool chat_frame_auto_scroll = true;
 
         public static TextBlock FileUploadWindow_FileNameTxb = null;
 

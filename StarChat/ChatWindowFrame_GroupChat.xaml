@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="StarChat.ChatWindowFrame_GroupChat"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:StarChat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Border CornerRadius="10">
+        <Grid Background="	#06ffffff">
+            <TextBox VerticalAlignment="Center" Width="600" Margin="-210,520,0,0" x:Name="ChatSendContentBox" IsTextPredictionEnabled="True" IsSpellCheckEnabled="True"></TextBox>
+            <Button Content="发送" VerticalAlignment="Center" Margin="650,522.5,0,0" Background="Green" x:Name="SendBtn" Click="SendBtn_Click"></Button>
+            <DropDownButton VerticalAlignment="Center" Margin="713,522.5,0,0">
+                <StackPanel>
+                    <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8b7;"></FontIcon>
+                </StackPanel>
+                <DropDownButton.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuFlyoutItem Text="文件" Click="MenuFlyoutItem_Click_2">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8e5;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="图片" Click="MenuFlyoutItem_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8b9;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="视频" Click="MenuFlyoutItem_Click_1">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8b9;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="剪切板图片">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8c8;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
+            <Button VerticalAlignment="Center" Margin="790,522.5,0,0" Click="Button_Click_1">
+                <StackPanel>
+                    <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe899;"></FontIcon>
+                </StackPanel>
+            </Button>
+            <ScrollViewer Height="520" Width="840" Margin="-10,-70,0,0" VerticalScrollBarVisibility="Auto" x:Name="scrollviewer_chatcontent">
+                <StackPanel x:Name="sp_chatcontent">
+                </StackPanel>
+            </ScrollViewer>
+            <Button Content="..." Margin="820,-550,0,0"></Button>
+        </Grid>
+    </Border>
+</Page>

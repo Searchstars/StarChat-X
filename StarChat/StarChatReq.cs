@@ -198,6 +198,7 @@ namespace StarChat
                 }
                 else
                 {
+                    LogWriter.LogError("StarReqServerError in GetFriendNameFromId=" + await Tools.AesEncryption.dec_aes_normal(responseContent));
                     return "ERR";
                 }
             }
@@ -211,6 +212,37 @@ namespace StarChat
                     DefaultButton = ContentDialogButton.Close
                 };
                 cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                LogWriter.LogError("StarReqClientError in GetFriendNameFromId=" + e);
+                return "ERR";
+            }
+        }
+
+        public async static Task<string> GetGroupNameFromId(string protob64)
+        {
+            try
+            {
+                string responseContent = await SendHttpRequest("/GetGroupNameFromId", protob64);
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
+                {
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
+                }
+                else
+                {
+                    LogWriter.LogError("StarReqServerError in GetGroupNameFromId=" + await Tools.AesEncryption.dec_aes_normal(responseContent));
+                    return "ERR";
+                }
+            }
+            catch (Exception e)
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "StarChat程序错误",
+                    Content = e,
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                LogWriter.LogError("StarReqClientError in GetGroupNameFromId=" + e);
                 return "ERR";
             }
         }
@@ -234,6 +266,7 @@ namespace StarChat
                         DefaultButton = ContentDialogButton.Close
                     };
                     cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    LogWriter.LogError("StarReqServerError in GetChatHistory=" + await Tools.AesEncryption.dec_aes_normal(responseContent));
                     return "ERR";
                 }
             }
@@ -401,6 +434,42 @@ namespace StarChat
             try
             {
                 string responseContent = await SendHttpRequest("/GetFriendsList", protob64);
+                if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
+                {
+                    return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
+                }
+                else
+                {
+                    var cd = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = "您的账号数据有问题，请联系开发者重置",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                    return "ERR: " + Tools.AesEncryption.dec_aes_normal(responseContent);
+                }
+            }
+            catch (Exception e)
+            {
+                var cd = new ContentDialog
+                {
+                    Title = "StarChat程序错误",
+                    Content = e,
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
+                return "ERR";
+            }
+        }
+
+        public async static Task<string> GetGroupsListReq(string protob64)
+        {
+            try
+            {
+                string responseContent = await SendHttpRequest("/GetGroupsList", protob64);
                 if ((await Tools.AesEncryption.dec_aes_normal(responseContent)).Contains("success>^<"))
                 {
                     return (await Tools.AesEncryption.dec_aes_normal(responseContent)).Split("success>^<")[1];
@@ -608,7 +677,7 @@ namespace StarChat
                     var data = line.Substring("data: ".Length);
                     if (data.Contains("checklive") || data.Contains("newfrimsg"))
                     {
-                        Console.WriteLine(data);
+                        //Console.WriteLine(data);
                     }
                     else
                     {
@@ -703,7 +772,7 @@ namespace StarChat
                     }
                     else if (data.Split(">")[0] == "newfrimsg")
                     {
-                        if(RunningDataSave.chatframe_targetid == int.Parse(data.Split(">")[1]))
+                        if((RunningDataSave.chatframe_targetid == int.Parse(data.Split(">")[1])) && (RunningDataSave.chatframe_type == "friend"))
                         {
                             string DataJson = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(data.Split(">")[2]));
                             JsonChatHistory DataCH = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonChatHistory>(DataJson);
@@ -740,6 +809,72 @@ namespace StarChat
                             if (DataCH.msgtype == "video")
                             {
                                 RunningDataSave.friendchatframe_sp_chatcontent.Children.Add(new MediaPlayerElement
+                                {
+                                    AreTransportControlsEnabled = true,
+                                    Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(DataCH.msglink)),
+                                    AutoPlay = false,
+                                    Margin = new Thickness(30, 20, 0, 0),
+                                    TransportControls = new MediaTransportControls
+                                    {
+                                        IsCompact = true,
+                                        IsFastForwardEnabled = true,
+                                        IsFastRewindEnabled = true,
+                                        IsFocusEngagementEnabled = true,
+                                        IsHoldingEnabled = true,
+                                        IsPlaybackRateEnabled = true,
+                                        IsPlaybackRateButtonVisible = false,
+                                        IsRepeatEnabled = true,
+                                        IsSeekEnabled = true,
+                                        IsRightTapEnabled = true,
+                                        IsVolumeEnabled = true,
+                                        IsTapEnabled = true,
+                                        IsSkipBackwardEnabled = true,
+                                        IsStopEnabled = true,
+                                    },
+                                });
+                            }
+                            //RunningDataSave.scrollviewer_chatcontent.ChangeView(null, RunningDataSave.scrollviewer_chatcontent.ExtentHeight, null, false);
+                        }
+                    }
+                    else if (data.Split(">")[0] == "newgrpmsg")
+                    {
+                        if ((RunningDataSave.chatframe_targetid == int.Parse(data.Split(">")[1])) && (RunningDataSave.chatframe_type == "group"))
+                        {
+                            string DataJson = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(data.Split(">")[2]));
+                            JsonChatHistory DataCH = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonChatHistory>(DataJson);
+                            if (DataCH.msgtype == "text")
+                            {
+                                RunningDataSave.groupchatframe_sp_chatcontent.Children.Add(new TextBlock
+                                {
+                                    Text = DataCH.msgcontent,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Margin = new Thickness(30, 20, 0, 0)
+                                });
+                            }
+                            if (DataCH.msgtype == "hyperlink")
+                            {
+                                RunningDataSave.groupchatframe_sp_chatcontent.Children.Add(new HyperlinkButton
+                                {
+                                    Content = DataCH.msgcontent,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Margin = new Thickness(18, 20, 0, 0),
+                                    NavigateUri = new Uri(DataCH.msglink)
+                                });
+                            }
+                            if (DataCH.msgtype == "image")
+                            {
+                                BitmapImage bipm = new BitmapImage();
+                                bipm.UriSource = new Uri(DataCH.msglink);
+                                RunningDataSave.groupchatframe_sp_chatcontent.Children.Add(new Microsoft.UI.Xaml.Controls.Image
+                                {
+                                    Source = bipm,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Margin = new Thickness(30, 20, 0, 0),
+                                });
+                            }
+                            if (DataCH.msgtype == "video")
+                            {
+                                RunningDataSave.groupchatframe_sp_chatcontent.Children.Add(new MediaPlayerElement
                                 {
                                     AreTransportControlsEnabled = true,
                                     Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(DataCH.msglink)),

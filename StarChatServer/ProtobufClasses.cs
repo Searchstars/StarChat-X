@@ -91,6 +91,10 @@ namespace StarChatServer
         // 查询聊天记录的用户的uid
         /// </summary>
         public string clientuid { get; set; }
+        /// <summary>
+        // 目标聊天记录的切片id
+        /// </summary>
+        public int clip_id { get; set; }
         [ProtoMember(4)]
         /// <summary>
         /// token验证
@@ -212,6 +216,20 @@ namespace StarChatServer
     }
     [ProtoContract]
     class ProtobufGetFriendsList
+    {
+        [ProtoMember(1)]
+        /// <summary>
+        /// 本人uid
+        /// </summary>
+        public int uid { get; set; }
+        [ProtoMember(2)]
+        /// <summary>
+        /// token验证
+        /// </summary>
+        public string token { get; set; }
+    }
+    [ProtoContract]
+    class ProtobufGetGroupsList
     {
         [ProtoMember(1)]
         /// <summary>

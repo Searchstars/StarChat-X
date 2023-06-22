@@ -12,8 +12,10 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <ListView Width="200" Margin="-900,20,0,0" x:Name="FriendsListView" SelectionMode="Single" IsItemClickEnabled="False" SelectionChanged="FriendsListView_SelectionChanged">
-        </ListView>
+        <ScrollViewer Width="200" Margin="-900,20,0,0">
+            <ListView x:Name="FriendsListView" SelectionMode="Single" IsItemClickEnabled="False" SelectionChanged="FriendsListView_SelectionChanged">
+            </ListView>
+        </ScrollViewer>
         <Frame Width="865" Height="600" Margin="220,0,0,0" x:Name="ChatFrame"></Frame>
     </Grid>
 </Page>

@@ -33,7 +33,7 @@
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe8bd;"></FontIcon>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="群组" x:Name="Groups" Tag="gp" IsEnabled="False">
+                <NavigationViewItem Content="群组" x:Name="Groups" Tag="gp">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe716;"></FontIcon>
                     </NavigationViewItem.Icon>
@@ -43,12 +43,12 @@
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe710;"></FontIcon>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="创建群组" x:Name="CreateGroups" Tag="cg" IsEnabled="False">
+                <NavigationViewItem Content="创建群组" x:Name="CreateGroups" Tag="cg">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe902;"></FontIcon>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="关于StarChat" x:Name="AboutStarChat" Tag="ab">
+                <NavigationViewItem Content="关于StarChat: Next Gen" x:Name="AboutStarChat" Tag="ab">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="/Resources/#Segoe Fluent Icons" Glyph="&#xe946;"></FontIcon>
                     </NavigationViewItem.Icon>

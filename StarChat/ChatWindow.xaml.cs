@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation and Contributors.
+ï»¿// Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
 using Microsoft.UI;
@@ -27,13 +27,13 @@ namespace StarChat
 
         private void window_close(AppWindow a, AppWindowClosingEventArgs e)
         {
-            LogWriter.LogInfo("ÓÃ»§¹Ø±ÕµÇÂ½´°¿Ú£¬³ÌĞòÍË³ö");
+            LogWriter.LogInfo("ç”¨æˆ·å…³é—­ç™»é™†çª—å£ï¼Œç¨‹åºé€€å‡º");
             App.application_exit_event();
         }
 
         private void window_sizechange(object a, WindowSizeChangedEventArgs e)
         {
-            LogWriter.LogInfo("ÓÃ»§ÕıÔÚ³¢ÊÔ×ÔĞĞµ÷Õû´°¿Ú´óĞ¡£¬ÕıÔÚÇ¿ÖÆµ÷»Ø...");
+            LogWriter.LogInfo("ç”¨æˆ·æ­£åœ¨å°è¯•è‡ªè¡Œè°ƒæ•´çª—å£å¤§å°ï¼Œæ­£åœ¨å¼ºåˆ¶è°ƒå›...");
             var rect = appWindow.Size;
             rect.Width = 1200;
             rect.Height = 700;
@@ -54,11 +54,11 @@ namespace StarChat
             rect.Height = 700;
             appWindow.Resize(rect);
             this.SizeChanged += window_sizechange;
-            LogWriter.LogInfo("´°¿ÚWidthÓëHeightÉèÖÃÍê³É£¬ResizeÍê±Ï");
+            LogWriter.LogInfo("çª—å£Widthä¸Heightè®¾ç½®å®Œæˆï¼ŒResizeå®Œæ¯•");
             SetTitleBar(AppTitleBar);
             if (Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").GetValue("AppsUseLightTheme").ToString() == "1")
             {
-                LogWriter.LogInfo("ºÃ°É£¬¿´À´Ä¿Ç°ÏµÍ³Ê¹ÓÃµÄÊÇÇ³É«Ä£Ê½...ÇĞ»»±³¾°ÑÕÉ«¿©£¡");
+                LogWriter.LogInfo("å¥½å§ï¼Œçœ‹æ¥ç›®å‰ç³»ç»Ÿä½¿ç”¨çš„æ˜¯æµ…è‰²æ¨¡å¼...åˆ‡æ¢èƒŒæ™¯é¢œè‰²å’¯ï¼");
                 RootGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243));
             }
             NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
@@ -84,9 +84,11 @@ namespace StarChat
             RunningDataSave.chatwindow_nav_static = this.NavigationViewControl;
             var cd = new ContentDialog
             {
-                Title = "»¶Ó­À´µ½ StarChat X ¼æÈİĞÔ²âÊÔ £¨Close Beta£©",
-                Content = "´Ë°æ±¾Ö»Ó¦ÓÃÓÚ²âÊÔÈí¼şµÄ¼æÈİĞÔÓë»ù´¡¹¦ÄÜ£¬Òò´Ë´æÔÚºÜ¶àµÄbugºÍÒÑÖªÎÊÌâ£¬¾ßÌå¿ÉÒÔÓĞÈçÏÂ¼¸µã£º\n1. ÔÚ¶à¸öºÃÓÑÖĞ¿ìËÙÇĞ»»»áÔì³ÉÄÚ´æĞ¹Â©£¬µ¼ÖÂ³ÌĞòÖ±½Ó³Ôµô350MÒÔÉÏÄÚ´æ\n2. Á¬Ğø¶à´Î¿ìËÙµã°´·¢ËÍ°´Å¥·¢ËÍÏûÏ¢£¨Ë¢ÆÁ£©Ê±»á³öÏÖÄÚ´æĞ¹Â¶µÄÎÊÌâ£¬»áµ¼ÖÂ³ÌĞòÖ±½Ó³Ôµô400MÒÔÉÏÄÚ´æ\n3. Èº×éºÍÍ¼Æ¬/ÎÄ¼ş/±íÇé·¢ËÍ¹¦ÄÜÃ»×öºÃ£¬±¾´Î²âÊÔ²»¿ª·Å\n4. ÓĞĞ©Ê±ºòÏûÏ¢¹ö¶¯Ìõ²¢²»»áÔÚÓĞĞÂÏûÏ¢Ê±×Ô¶¯¹öµ½µ×²¿£¬¿ÉÍ¨¹ıÇĞ»»µ½ÁíÒ»ºÃÓÑµÄÁÄÌìÒ³ÃæÔÙÇĞ»ØÀ´½â¾ö\n\n×£ÌåÑéÓä¿ì£¬±¾´Î²âÊÔ½«¿ª·ÅÖÁ3ÔÂ31ÈÕ£¬ÓĞÎÊÌâÇë¼°Ê±»ã±¨¸ø¿ª·¢Õß",
-                CloseButtonText = "OK",
+                Title = "æ¬¢è¿æ¥åˆ° StarChat: Next Gen çš„ â€œå±•æœ›æµ‹è¯•â€ ï¼ˆOpen Betaï¼‰",
+                Content = "æ­¤ç‰ˆæœ¬çš„StarChatå·²ç»æ¥è¿‘å®Œå–„ï¼Œç”¨äºæµ‹è¯•è½¯ä»¶çš„ä¸€èˆ¬åŠŸèƒ½ä¸æ—¥å¸¸ä½¿ç”¨ä½“éªŒï¼Œä½†ä»æœªç»è¿‡ä¼˜åŒ–ï¼Œå› æ­¤å­˜åœ¨å¾ˆå¤šçš„bugå’Œå·²çŸ¥é—®é¢˜ï¼Œå…·ä½“å¯ä»¥æœ‰å¦‚ä¸‹å‡ ç‚¹ï¼š\n1. å½“ä¸å¥½å‹çš„èŠå¤©è®°å½•è¿‡é•¿æ—¶ï¼ˆå¦‚è¶…è¿‡1kæ¡æ–‡å­—æˆ–20ä¸ªè§†é¢‘ï¼‰ç¨‹åºä¼šå ç”¨å¤§é‡å†…å­˜ï¼Œåˆ‡æ¢åˆ°å¦ä¸€ä¸ªå¥½å‹èƒ½å¤Ÿè§£å†³ï¼Œæ—¥åä¼šæ¨å‡ºæ¸…ç©ºèŠå¤©è®°å½•çš„åŠŸèƒ½\n2. è¿ç»­å¤šæ¬¡å¿«é€Ÿç‚¹æŒ‰å‘é€æŒ‰é’®å‘é€æ¶ˆæ¯ï¼ˆåˆ·å±ï¼‰æ—¶ç¨‹åºæœ‰æ¦‚ç‡å´©æºƒæˆ–å†…å­˜æ³„æ¼\n3. ç¾¤ç»„ä¸­å›¾ç‰‡ä¸è§†é¢‘ä¸æ˜¾ç¤ºå‘é€äººåç§°ï¼Œä¸‹ä¸ªç‰ˆæœ¬ä¸€å®šåšå¥½ï¼\n4. èŠå¤©è®°å½•é¡µé¢æ»šåŠ¨ä¸æµç•…ï¼Œè¿™ä¸ªæˆ‘ä¹Ÿæ²¡åŠæ³•qwq\n\nç¥ä½“éªŒæ„‰å¿«ï¼Œæœ¬æ¬¡æµ‹è¯•å°†å¼€æ”¾è‡³8æœˆ1æ—¥ï¼Œæœ‰é—®é¢˜è¯·åŠæ—¶æ±‡æŠ¥ç»™å¼€å‘è€…\nStarChat: NextGen v0.3\nMade By StargazingStudio with â¤ï¸",
+                CloseButtonText = "å…³é—­",
+                PrimaryButtonText = "é—®é¢˜æŠ¥å‘Š",
+                SecondaryButtonText = "è¿™æ˜¯ä»€ä¹ˆï¼Ÿ",
                 DefaultButton = ContentDialogButton.Close
             };
             cd.XamlRoot = RunningDataSave.chatwindow_static.Content.XamlRoot;
@@ -96,7 +98,7 @@ namespace StarChat
         private void NavigationViewControl_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             var selectedItem = (NavigationViewItem)args.SelectedItem;
-            LogWriter.LogInfo("NavigationView SelectionChanged£¬Ñ¡ÔñµÄitem tagÎª" + (string)selectedItem.Tag);
+            LogWriter.LogInfo("NavigationView SelectionChangedï¼Œé€‰æ‹©çš„item tagä¸º" + (string)selectedItem.Tag);
             if ((string)selectedItem.Tag == "fri") contentFrame.Navigate(typeof(FriendsPage));
             else if ((string)selectedItem.Tag == "gp") contentFrame.Navigate(typeof(GroupsPage));
             else if ((string)selectedItem.Tag == "afog") contentFrame.Navigate(typeof(AddFriendsOrGroupsPage));

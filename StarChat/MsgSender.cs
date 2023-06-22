@@ -28,11 +28,35 @@ namespace StarChat
             }
         }
 
-        public async static void SendFileToFriend(string path, int target_id, bool is_image, bool is_video)
+        public async static void SendTextToGroup(string txt, int target_id)
+        {
+            var sendproto = new ProtobufMessageSend
+            {
+                msg_b64 = txt,
+                msg_type = "text",
+                userchatname = RunningDataSave.userchatname,
+                target_type = "group",
+                targetid = target_id,
+                selfuid = RunningDataSave.useruid,
+                token = RunningDataSave.token
+            };
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(memoryStream, sendproto);
+                await StarChatReq.SendMessageReq(Convert.ToBase64String(memoryStream.ToArray()), false, null, null, null);
+            }
+        }
+
+        public async static void SendFile(string path, int target_id, bool is_image, bool is_video, bool to_group)
         {
             if (!RunningDataSave.upload_window_open)
             {
                 var msg_type_tmp = "";
+                var msg_tgt_tmp = "friend";
+                if (to_group)
+                {
+                    msg_tgt_tmp = "group";
+                }
                 if (is_image)
                 {
                     msg_type_tmp = "img";
@@ -60,7 +84,7 @@ namespace StarChat
                     msg_b64 = new FileInfo(path).Name + ">biname^split<" + file64,
                     msg_type = msg_type_tmp,
                     userchatname = RunningDataSave.userchatname,
-                    target_type = "friend",
+                    target_type = msg_tgt_tmp,
                     targetid = target_id,
                     selfuid = RunningDataSave.useruid,
                     token = RunningDataSave.token

@@ -17,6 +17,12 @@
     <None Update="App.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="ChatWindowFrame_GroupChat.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="ChatWindowFrame_NoSelectGroup.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="EulaWindow.xaml">
       <SubType>Designer</SubType>
     </Page>

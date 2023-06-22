@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>StarChat</RootNamespace>
@@ -16,7 +16,9 @@
     <None Remove="AddFriendsOrGroupsPage.xaml" />
     <None Remove="ChatWindow.xaml" />
     <None Remove="ChatWindowFrame_FriendChat.xaml" />
+    <None Remove="ChatWindowFrame_GroupChat.xaml" />
     <None Remove="ChatWindowFrame_NoSelectFriend.xaml" />
+    <None Remove="ChatWindowFrame_NoSelectGroup.xaml" />
     <None Remove="DebugOptionsWindow.xaml" />
     <None Remove="EulaWindow.xaml" />
     <None Remove="FileUploadProgressBAR.xaml" />
@@ -68,6 +70,12 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="EulaWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="ChatWindowFrame_NoSelectGroup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="ChatWindowFrame_GroupChat.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="memes_warning_list.json">
