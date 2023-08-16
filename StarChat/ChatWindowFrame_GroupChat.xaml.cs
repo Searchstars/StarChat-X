@@ -299,6 +299,7 @@ namespace StarChat
                     }
                 }
                 MsgSender.SendTextToGroup(ChatSendContentBox.Text, RunningDataSave.chatframe_targetid);
+                ChatSendContentBox.Text = "";
             }
         }
 

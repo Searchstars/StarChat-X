@@ -4,6 +4,7 @@
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using MongoDB.Bson.Serialization.Conventions;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -20,9 +21,9 @@ namespace StarChat
     public partial class App : Application
     {
 
-        public static double appver = 1.0;
+        public static double appver = 0.3;
         public static string appreleasetype = "alpha";
-        public static string chatserverip = "starchatbeta3_chatserver_area_sg.stargazing.studio";//本地调试 127.0.0.1:8000
+        public static string chatserverip = "127.0.0.1:8000";//本地调试 127.0.0.1:8000
         public static bool open_main_win = true;
         public static bool mainwindow_actived = false;
 
@@ -59,6 +60,22 @@ namespace StarChat
                     System.Environment.Exit(0);
 #endif
                 }
+            }
+        }
+
+        public async static void version_check()
+        {
+            try
+            {
+                string ver_str = await Tools.HttpContentGet.get(StarChatReq.http_or_https + App.chatserverip + "/GetFileShare/getminver");
+                if (appver < double.Parse(ver_str))
+                {
+                    System.Windows.Forms.MessageBox.Show("应用程序版本过低，不满足服务器最新版本要求，请升级！\nThe application version does not meet the minimum requirements, please upgrade!");
+                    Environment.Exit(0);
+                }
+            }
+            catch {
+                System.Windows.Forms.MessageBox.Show("Network Error or Unsupported operating systems.\nPlease check your network or upgrade the operating system version to at least Windows 10 1903 or above.");
             }
         }
 

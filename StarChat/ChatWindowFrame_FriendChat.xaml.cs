@@ -297,6 +297,7 @@ namespace StarChat
                     }
                 }
                 MsgSender.SendTextToFriend(ChatSendContentBox.Text,RunningDataSave.chatframe_targetid);
+                ChatSendContentBox.Text = "";
             }
         }
 

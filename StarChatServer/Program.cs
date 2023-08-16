@@ -25,6 +25,8 @@ namespace StarChatServer
         public static string url = "http://*:8000/";//监听所有IP 一般不用改
         public static string clientcontent_url = "http://127.0.0.1:8000/";//客户端在获取在线内容（如图片 文件等）的url前缀，一般用于硬写jsonchathistory，也方便迁移
         public static string dburl = "mongodb://127.0.0.1:27017";//本地调试27017
+        public static double client_version = 0.3;//客户端最新版本（更新检测）
+        public static double client_min_version = 0.3;//客户端最低版本（强制更新检测）
         //public static string dburl = "mongodb://csharpserveradmin:cservpwd@43.152.199.64:27017/?authMechanism=DEFAULT";//数据库url，按照搭建环境进行调整
         public static MongoClient client = new MongoClient(dburl);
         public static IMongoCollection<BsonDocument> dbcollection_test = client.GetDatabase("StarChatServer").GetCollection<BsonDocument>("test");
@@ -281,6 +283,24 @@ namespace StarChatServer
                 else if (get_filename == "getpcyla")
                 {
                     var dataBytes = Encoding.UTF8.GetBytes(File.ReadAllText("./PCYLA_RESP.txt"));
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+                    resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
+                    resp.Close();
+                }
+                else if(get_filename == "getver")
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(client_version.ToString());
+                    resp.ContentType = "text/html";
+                    resp.ContentEncoding = Encoding.UTF8;
+                    resp.ContentLength64 = dataBytes.LongLength;
+                    resp.OutputStream.Write(dataBytes, 0, dataBytes.Length);
+                    resp.Close();
+                }
+                else if(get_filename == "getminver")
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(client_min_version.ToString());
                     resp.ContentType = "text/html";
                     resp.ContentEncoding = Encoding.UTF8;
                     resp.ContentLength64 = dataBytes.LongLength;
